@@ -17,4 +17,9 @@ dotnet ef database update --project .\src\Wex.Purchases.Infrastructure\Wex.Purch
 docker exec wex-mysql mysql -uroot -proot123 -e "USE wex_purchases; SHOW TABLES; SELECT MigrationId FROM __EFMigrationsHistory;"
 
 
+dotnet build
+dotnet test
+docker compose up -d wex-mysql
+dotnet ef database update --project .\src\Wex.Purchases.Infrastructure\Wex.Purchases.Infrastructure.csproj --startup-project .\src\Wex.Purchases.Api\Wex.Purchases.Api.csproj
+
 # architecture

@@ -1,6 +1,6 @@
 using Wex.Purchases.Application.DependencyInjection;
-using Wex.Purchases.Infrastructure.DependencyInjection;
-using Wex.Purchases.Infrastructure.Persistence;
+using Wex.Purchases.Infrastructure.MySql.DependencyInjection;
+using Wex.Purchases.Infrastructure.MySql.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Wex.Purchases.Api.ExceptionHandling;
 
@@ -27,7 +27,6 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    app.MapGet("/", () => Results.Redirect("/swagger"));
 }
 
 app.UseExceptionHandler();

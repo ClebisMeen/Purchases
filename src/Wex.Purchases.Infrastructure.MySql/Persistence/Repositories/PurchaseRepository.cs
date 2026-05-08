@@ -2,7 +2,7 @@ using Wex.Purchases.Application.Repositories;
 using Wex.Purchases.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Wex.Purchases.Infrastructure.Persistence.Repositories;
+namespace Wex.Purchases.Infrastructure.MySql.Persistence.Repositories;
 
 public sealed class PurchaseRepository : IPurchaseRepository
 {

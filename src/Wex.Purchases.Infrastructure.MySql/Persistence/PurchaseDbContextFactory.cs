@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
-namespace Wex.Purchases.Infrastructure.Persistence;
+namespace Wex.Purchases.Infrastructure.MySql.Persistence;
 
 public sealed class PurchaseDbContextFactory : IDesignTimeDbContextFactory<PurchaseDbContext>
 {

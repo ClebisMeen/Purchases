@@ -19,7 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Wex.Purchases.Application\Wex.Purchases.Application.csproj" />
-    <ProjectReference Include="..\Wex.Purchases.Infrastructure\Wex.Purchases.Infrastructure.csproj" />
+    <ProjectReference Include="..\Wex.Purchases.Infrastructure.MySql\Wex.Purchases.Infrastructure.MySql.csproj" />
   </ItemGroup>
 
 </Project>

@@ -2,10 +2,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Wex.Purchases.Application.Repositories;
-using Wex.Purchases.Infrastructure.Persistence;
-using Wex.Purchases.Infrastructure.Persistence.Repositories;
+using Wex.Purchases.Infrastructure.MySql.Persistence;
+using Wex.Purchases.Infrastructure.MySql.Persistence.Repositories;
 
-namespace Wex.Purchases.Infrastructure.DependencyInjection;
+namespace Wex.Purchases.Infrastructure.MySql.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {

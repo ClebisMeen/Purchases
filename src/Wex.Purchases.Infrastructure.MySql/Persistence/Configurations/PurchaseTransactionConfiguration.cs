@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Wex.Purchases.Domain.Entities;
 
-namespace Wex.Purchases.Infrastructure.Persistence.Configurations;
+namespace Wex.Purchases.Infrastructure.MySql.Persistence.Configurations;
 
 public sealed class PurchaseTransactionConfiguration : IEntityTypeConfiguration<PurchaseTransaction>
 {

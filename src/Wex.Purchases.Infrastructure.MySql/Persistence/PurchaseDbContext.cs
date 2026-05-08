@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Wex.Purchases.Domain.Entities;
 
-namespace Wex.Purchases.Infrastructure.Persistence;
+namespace Wex.Purchases.Infrastructure.MySql.Persistence;
 
 public sealed class PurchaseDbContext : DbContext
 {
