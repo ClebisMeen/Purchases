@@ -2,10 +2,13 @@ using Wex.Purchases.Application.DependencyInjection;
 using Wex.Purchases.Infrastructure.DependencyInjection;
 using Wex.Purchases.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Wex.Purchases.Api.ExceptionHandling;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -27,6 +30,7 @@ if (app.Environment.IsDevelopment())
     app.MapGet("/", () => Results.Redirect("/swagger"));
 }
 
+app.UseExceptionHandler();
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
