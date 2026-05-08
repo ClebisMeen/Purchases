@@ -8,10 +8,12 @@ public sealed class PurchaseDbContextFactory : IDesignTimeDbContextFactory<Purch
     public PurchaseDbContext CreateDbContext(string[] args)
     {
         var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__PurchaseDb")
-            ?? "server=localhost;port=3306;database=wex_purchases;user=wex;password=wex123";
+            ?? throw new InvalidOperationException("Connection string 'PurchaseDb' was not found.");
 
         var optionsBuilder = new DbContextOptionsBuilder<PurchaseDbContext>();
-        optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
+        optionsBuilder.UseMySql(
+            connectionString,
+            new MySqlServerVersion(new Version(8, 4, 0)));
 
         return new PurchaseDbContext(optionsBuilder.Options);
     }

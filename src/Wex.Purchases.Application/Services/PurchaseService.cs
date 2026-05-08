@@ -35,6 +35,26 @@ public sealed class PurchaseService : IPurchaseService
             purchaseTransaction.AmountUsd);
     }
 
+    public async Task<CreatePurchaseResult?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        if (id == Guid.Empty)
+        {
+            throw new ArgumentException("Id is required.", nameof(id));
+        }
+
+        var purchaseTransaction = await _purchaseRepository.GetByIdAsync(id, cancellationToken);
+        if (purchaseTransaction is null)
+        {
+            return null;
+        }
+
+        return new CreatePurchaseResult(
+            purchaseTransaction.Id,
+            purchaseTransaction.Description,
+            purchaseTransaction.TransactionDate,
+            purchaseTransaction.AmountUsd);
+    }
+
     private static void ValidateRequest(CreatePurchaseRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);

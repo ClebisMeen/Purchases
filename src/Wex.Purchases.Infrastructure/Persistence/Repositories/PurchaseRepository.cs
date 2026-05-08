@@ -1,5 +1,6 @@
 using Wex.Purchases.Application.Repositories;
 using Wex.Purchases.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Wex.Purchases.Infrastructure.Persistence.Repositories;
 
@@ -18,5 +19,12 @@ public sealed class PurchaseRepository : IPurchaseRepository
 
         await _dbContext.PurchaseTransactions.AddAsync(purchaseTransaction, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<PurchaseTransaction?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.PurchaseTransactions
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 }
