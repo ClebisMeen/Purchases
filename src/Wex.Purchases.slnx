@@ -1,4 +1,7 @@
 <Solution>
   <Project Path="Wex.Purchases.Api/Wex.Purchases.Api.csproj" />
   <Project Path="Wex.Purchases.Application/Wex.Purchases.Application.csproj" />
+  <Project Path="Wex.Purchases.Contracts/Wex.Purchases.Contracts.csproj" Id="3dbaee31-3a12-4184-9e7e-c765a475c2c7" />
+  <Project Path="Wex.Purchases.Domain/Wex.Purchases.Domain.csproj" Id="e5dfefd1-0e20-4a46-ba3d-f236ec108a05" />
+  <Project Path="Wex.Purchases.Infrastructure/Wex.Purchases.Infrastructure.csproj" Id="ff9b33b8-0e6d-4c91-95d7-48ea3c1faa7a" />
 </Solution>
