@@ -1,0 +1,14 @@
+services:
+  wex-purchases-api:
+    container_name: wex-purchases-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BUILD_CONFIGURATION: Release
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+    ports:
+      - "5063:8080"
+    restart: unless-stopped
