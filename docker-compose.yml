@@ -9,6 +9,32 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__PurchaseDb: server=wex-mysql;port=3306;database=wex_purchases;user=wex;password=wex123
     ports:
       - "8080:8080"
+    depends_on:
+      wex-mysql:
+        condition: service_healthy
     restart: unless-stopped
+
+  wex-mysql:
+    container_name: wex-mysql
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: wex_purchases
+      MYSQL_USER: wex
+      MYSQL_PASSWORD: wex123
+      MYSQL_ROOT_PASSWORD: root123
+    ports:
+      - "3306:3306"
+    volumes:
+      - wex_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot123"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  wex_mysql_data:
