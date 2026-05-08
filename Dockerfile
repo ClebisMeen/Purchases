@@ -12,12 +12,12 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["Wex.Purchases.slnx", "./"]
-COPY ["Wex.Purchases.Api/Wex.Purchases.Api.csproj", "Wex.Purchases.Api/"]
-COPY ["Wex.Purchases.Application/Wex.Purchases.Application.csproj", "Wex.Purchases.Application/"]
-RUN dotnet restore "./Wex.Purchases.Api/Wex.Purchases.Api.csproj"
+COPY ["src/Wex.Purchases.slnx", "src/"]
+COPY ["src/Wex.Purchases.Api/Wex.Purchases.Api.csproj", "src/Wex.Purchases.Api/"]
+COPY ["src/Wex.Purchases.Application/Wex.Purchases.Application.csproj", "src/Wex.Purchases.Application/"]
+RUN dotnet restore "./src/Wex.Purchases.Api/Wex.Purchases.Api.csproj"
 COPY . .
-WORKDIR "/src/Wex.Purchases.Api"
+WORKDIR "/src/src/Wex.Purchases.Api"
 RUN dotnet build "./Wex.Purchases.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # Esta fase é usada para publicar o projeto de serviço a ser copiado para a fase final
