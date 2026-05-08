@@ -7,10 +7,8 @@ namespace Wex.Purchases.Api.Controllers
     [Route("[controller]")]
     public class WeatherForecastController : ControllerBase
     {
-        private readonly ITesteService _testeService;
-        public WeatherForecastController(ITesteService testeService)
+        public WeatherForecastController()
         {
-            _testeService = testeService;
         }
 
         private static readonly string[] Summaries =
@@ -26,7 +24,7 @@ namespace Wex.Purchases.Api.Controllers
                 Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
                 TemperatureC = Random.Shared.Next(-20, 55),
                 Summary = Summaries[Random.Shared.Next(Summaries.Length)],
-                Teste = _testeService.GetMessage()
+                Teste = ""
             })
             .ToArray();
         }
