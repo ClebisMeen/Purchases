@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Wex.Purchases.Api/Wex.Purchases.Api.csproj" />
+  <Project Path="Wex.Purchases.Application/Wex.Purchases.Application.csproj" />
+</Solution>
