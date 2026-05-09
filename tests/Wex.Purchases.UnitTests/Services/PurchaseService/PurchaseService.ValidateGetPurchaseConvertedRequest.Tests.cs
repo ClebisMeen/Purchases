@@ -39,10 +39,26 @@ public class PurchaseServiceValidateGetPurchaseConvertedRequestTests
         Assert.Equal("CountryCurrencyDescription is required. (Parameter 'request')", exception.Message);
     }
 
+    [Theory]
+    [InlineData("Brazil")]
+    [InlineData("Brazil-")]
+    [InlineData("-Real")]
+    [InlineData("Brazil-Real-Extra")]
+    [InlineData("Brazil-123")]
+    public void Testar_ValidateGetPurchaseConvertedRequest_CountryCurrencyDescriptionForaDoFormatoEsperado_DeveGerarErro(string countryCurrencyDescription)
+    {
+        var request = new GetPurchaseConvertedRequest(Guid.NewGuid(), countryCurrencyDescription);
+
+        var exception = Assert.Throws<ArgumentException>(() => PurchaseService.ValidateGetPurchaseConvertedRequest(request));
+
+        Assert.Equal("request", exception.ParamName);
+        Assert.Equal("CountryCurrencyDescription must match a supported Treasury API description format, for example: Brazil-Real. (Parameter 'request')", exception.Message);
+    }
+
     [Fact]
     public void Testar_ValidateGetPurchaseConvertedRequest_Valido_NaoDeveGerarErro()
     {
-        var request = new GetPurchaseConvertedRequest(Guid.NewGuid(), "BRAZIL-REAL");
+        var request = new GetPurchaseConvertedRequest(Guid.NewGuid(), "Brazil-Real");
 
         var exception = Record.Exception(() => PurchaseService.ValidateGetPurchaseConvertedRequest(request));
 

@@ -27,7 +27,7 @@ public sealed class PurchaseController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("{id:guid}", Name = "GetPurchaseById")]
+    [HttpGet("{id}", Name = "GetPurchaseById")]
     public async Task<ActionResult<GetPurchaseConvertedResult>> GetByIdAsync(
         Guid id,
         [FromQuery] string countryCurrencyDescription,

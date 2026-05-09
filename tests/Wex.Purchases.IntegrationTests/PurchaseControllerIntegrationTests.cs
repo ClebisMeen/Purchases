@@ -39,6 +39,40 @@ public sealed class PurchaseControllerIntegrationTests : IClassFixture<WexPurcha
     }
 
     [Fact]
+    public async Task GetPurchaseById_WhenCountryCurrencyDescriptionIsEmpty_ReturnsBadRequest()
+    {
+        // Arrange
+        var purchaseId = WexPurchasesFactory.ExistingPurchaseId1;
+        var url = $"/api/purchases/{purchaseId}?countryCurrencyDescription=";
+
+        // Act
+        var response = await _client.GetAsync(url);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+        var problemDetails = await response.Content.ReadFromJsonAsync<ProblemDetails>();
+        Assert.NotNull(problemDetails);
+        Assert.Equal("Request validation failed.", problemDetails.Title);
+    }
+
+    [Fact]
+    public async Task GetPurchaseById_WhenIdentifierIsInvalid_ReturnsBadRequest()
+    {
+        // Arrange
+        var url = "/api/purchases/not-a-guid?countryCurrencyDescription=Brazil-Real";
+
+        // Act
+        var response = await _client.GetAsync(url);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+        var problemDetails = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
+        Assert.NotNull(problemDetails);
+    }
+
+    [Fact]
     public async Task CreatePurchase_WhenRequestIsValid_ReturnsCreatedPurchase()
     {
         // Arrange

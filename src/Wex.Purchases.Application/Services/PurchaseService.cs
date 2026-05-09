@@ -129,15 +129,14 @@ public sealed class PurchaseService : IPurchaseService
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        if (request.PurchaseId == Guid.Empty)
+        var validationResult = new GetPurchaseConvertedRequestValidator().Validate(request);
+        if (validationResult.IsValid)
         {
-            throw new ArgumentException("PurchaseId is required.", nameof(request));
+            return;
         }
 
-        if (string.IsNullOrWhiteSpace(request.CountryCurrencyDescription))
-        {
-            throw new ArgumentException("CountryCurrencyDescription is required.", nameof(request));
-        }
+        var firstError = validationResult.Errors[0];
+        throw new ArgumentException(firstError.ErrorMessage, nameof(request));
     }
 
 }
