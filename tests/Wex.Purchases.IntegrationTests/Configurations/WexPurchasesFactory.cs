@@ -6,8 +6,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Wex.Purchases.Domain.Entities;
 using Wex.Purchases.Infrastructure.MySql.Persistence;
-using Wex.Purchases.Infrastructure.Treasury.Requests;
-using Wex.Purchases.Infrastructure.Treasury.Results;
 using Wex.Purchases.Infrastructure.Treasury.Services;
 
 namespace Wex.Purchases.IntegrationTests;
@@ -78,22 +76,5 @@ public sealed class WexPurchasesFactory : WebApplicationFactory<Program>
             descriptor.ServiceType.GetGenericTypeDefinition().FullName ==
                 "Microsoft.EntityFrameworkCore.Infrastructure.IDbContextOptionsConfiguration`1" &&
             descriptor.ServiceType.GenericTypeArguments[0] == typeof(PurchaseDbContext);
-    }
-
-    private sealed class FakeTreasuryApiService : ITreasuryApiService
-    {
-        public Task<GetTreasuryExchangeRateApiResult?> GetExchangeRateAsync(
-            GetTreasuryExchangeRateApiRequest request,
-            CancellationToken cancellationToken)
-        {
-            var result = new GetTreasuryExchangeRateApiResult(
-                "Brazil",
-                "Real",
-                request.CountryCurrencyDescription,
-                5.00m,
-                request.PurchaseDate);
-
-            return Task.FromResult<GetTreasuryExchangeRateApiResult?>(result);
-        }
     }
 }
