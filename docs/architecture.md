@@ -26,4 +26,10 @@ dotnet ef database update --project .\src\Wex.Purchases.Infrastructure\Wex.Purch
 dotnet test tests\Wex.Purchases.UnitTests\Wex.Purchases.UnitTests.csproj
 dotnet test tests\Wex.Purchases.IntegrationTests\Wex.Purchases.IntegrationTests.csproj
 
-# architecture
+https://fiscaldata.treasury.gov/datasets/treasury-reporting-rates-exchange/treasury-reporting-rates-of-exchange#api-quick-guide
+
+
+
+
+docker compose up -d wex-mysql
+docker compose up -d redis
