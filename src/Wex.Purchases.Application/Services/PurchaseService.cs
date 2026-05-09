@@ -1,12 +1,15 @@
+using System.Runtime.CompilerServices;
 using Wex.Purchases.Application.Repositories;
 using Wex.Purchases.Application.Requests;
 using Wex.Purchases.Application.Results;
 using Wex.Purchases.Contracts.Requests;
 using Wex.Purchases.Contracts.Results;
 using Wex.Purchases.Domain.Entities;
+using Wex.Purchases.Domain.ValueObjects;
 using Wex.Purchases.Infrastructure.Treasury.Requests;
 using Wex.Purchases.Infrastructure.Treasury.Services;
 
+[assembly: InternalsVisibleTo("Wex.Purchases.UnitTests")]
 namespace Wex.Purchases.Application.Services;
 
 public sealed class PurchaseService : IPurchaseService
@@ -26,7 +29,7 @@ public sealed class PurchaseService : IPurchaseService
     {
         ValidateRequest(request);
 
-        var roundedAmount = decimal.Round(request.AmountUsd, 2, MidpointRounding.AwayFromZero);
+        var roundedAmount = Money.FromAmount(request.AmountUsd).Amount;
 
         var purchaseTransaction = new PurchaseTransaction(
             Guid.NewGuid(),
@@ -65,7 +68,7 @@ public sealed class PurchaseService : IPurchaseService
         return result;
     }
 
-    private async Task<GetPurchaseConvertedResult> GetPurchaseConvertedAsync(
+    internal async Task<GetPurchaseConvertedResult> GetPurchaseConvertedAsync(
         PurchaseTransaction purchaseTransaction,
         string countryCurrencyDescription,
         CancellationToken cancellationToken)
@@ -79,9 +82,10 @@ public sealed class PurchaseService : IPurchaseService
             throw new InvalidOperationException(
                 $"No exchange rate was found for '{countryCurrencyDescription}' on or before '{purchaseTransaction.TransactionDate:yyyy-MM-dd}'.");
 
-        var amountConverted = CalculateAmountConverted(
-            purchaseTransaction.AmountUsd,
-            exchangeRateApiResult.ExchangeRate);
+        var amountConverted = Money
+            .FromAmount(purchaseTransaction.AmountUsd)
+            .Convert(exchangeRateApiResult.ExchangeRate)
+            .Amount;
 
         var result = new GetPurchaseConvertedResult(
             purchaseTransaction.Id,
@@ -98,7 +102,7 @@ public sealed class PurchaseService : IPurchaseService
         return result;
     }
 
-    private static void ValidateRequest(CreatePurchaseRequest request)
+    internal static void ValidateRequest(CreatePurchaseRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -123,7 +127,7 @@ public sealed class PurchaseService : IPurchaseService
         }
     }
 
-    private static void ValidateGetPurchaseConvertedRequest(GetPurchaseConvertedRequest request)
+    internal static void ValidateGetPurchaseConvertedRequest(GetPurchaseConvertedRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -137,8 +141,5 @@ public sealed class PurchaseService : IPurchaseService
             throw new ArgumentException("CountryCurrencyDescription is required.", nameof(request));
         }
     }
-
-    private static decimal CalculateAmountConverted(decimal amountUsd, decimal exchangeRate) =>
-        decimal.Round(amountUsd * exchangeRate, 2, MidpointRounding.AwayFromZero);
 
 }

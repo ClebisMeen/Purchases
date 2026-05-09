@@ -1,6 +1,6 @@
 namespace Wex.Purchases.Domain.Entities;
 
-public class PurchaseTransaction
+public class PurchaseTransaction : Entity
 {
     public Guid Id { get; private set; }
     public string Description { get; private set; }
