@@ -3,6 +3,7 @@ using Wex.Purchases.Infrastructure.MySql.DependencyInjection;
 using Wex.Purchases.Infrastructure.MySql.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Wex.Purchases.Api.ExceptionHandling;
+using Wex.Purchases.Infrastructure.Treasury;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +15,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
+builder.Services.AddTreasuryInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 

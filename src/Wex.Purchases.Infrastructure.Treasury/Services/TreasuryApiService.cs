@@ -61,12 +61,14 @@ public sealed class TreasuryApiService(HttpClient httpClient, IOptions<TreasuryA
             return null;
         }
 
-        return new GetTreasuryExchangeRateApiResult(
+        var result = new GetTreasuryExchangeRateApiResult(
             item.Country,
             item.Currency,
             item.CountryCurrencyDescription,
             item.ExchangeRate.Value,
             item.RecordDate.Value);
+            
+        return result;
     }
 
     private static string EscapeFilterValue(string value) => value.Replace(",", "\\,", StringComparison.Ordinal);

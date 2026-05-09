@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Wex.Purchases.Contracts\Wex.Purchases.Contracts.csproj" />
     <ProjectReference Include="..\Wex.Purchases.Domain\Wex.Purchases.Domain.csproj" />
+    <ProjectReference Include="..\Wex.Purchases.Infrastructure.Treasury\Wex.Purchases.Infrastructure.Treasury.csproj" />
   </ItemGroup>
 
   <ItemGroup>

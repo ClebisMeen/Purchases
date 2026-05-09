@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using Wex.Purchases.Application.Requests;
+using Wex.Purchases.Application.Results;
 using Wex.Purchases.Application.Services;
 using Wex.Purchases.Contracts.Requests;
 using Wex.Purchases.Contracts.Results;
@@ -26,9 +28,13 @@ public sealed class PurchaseController : ControllerBase
     }
 
     [HttpGet("{id:guid}", Name = "GetPurchaseById")]
-    public async Task<ActionResult<CreatePurchaseResult>> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<ActionResult<GetPurchaseConvertedResult>> GetByIdAsync(
+        Guid id,
+        [FromQuery] string countryCurrencyDescription,
+        CancellationToken cancellationToken)
     {
-        var result = await _purchaseService.GetByIdAsync(id, cancellationToken);
+        var request = new GetPurchaseConvertedRequest(id, countryCurrencyDescription);
+        var result = await _purchaseService.GetByIdAsync(request, cancellationToken);
         return Ok(result);
     }
 }
