@@ -11,4 +11,7 @@ public sealed record GetPurchaseConvertedResult(
     decimal ExchangeRate,
     DateOnly ExchangeRateRecordDate,
     decimal AmountConverted
-);
+)
+{
+    public string From { get; init; } = "database";
+}

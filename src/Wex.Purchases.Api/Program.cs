@@ -4,6 +4,7 @@ using Wex.Purchases.Infrastructure.MySql.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Wex.Purchases.Api.ExceptionHandling;
 using Wex.Purchases.Infrastructure.Treasury;
+using Wex.Purchases.Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,8 +13,14 @@ builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+    options.InstanceName = "Wex.Purchases:";
+});
 
 builder.Services.AddApplicationServices();
+builder.Services.Decorate<IPurchaseService, PurchaseServiceCachingDecorator>();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddTreasuryInfrastructure(builder.Configuration);
 
