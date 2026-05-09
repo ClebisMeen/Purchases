@@ -53,7 +53,7 @@ public sealed class PurchaseControllerIntegrationTests : IClassFixture<WexPurcha
 
         var problemDetails = await response.Content.ReadFromJsonAsync<ProblemDetails>();
         Assert.NotNull(problemDetails);
-        Assert.Equal("Request validation failed.", problemDetails.Title);
+        Assert.Equal("One or more validation errors occurred.", problemDetails.Title);
     }
 
     [Fact]
