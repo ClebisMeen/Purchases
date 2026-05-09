@@ -12,7 +12,7 @@ public sealed class PurchaseFixture
         return new CreatePurchaseRequest(
             Description: "Compra valida",
             TransactionDate: DateTime.UtcNow.Date,
-            AmountUsd: 10.125m);
+            PurchaseAmount: 10.125m);
     }
 
     public GetPurchaseConvertedRequest GerarGetPurchaseConvertedRequestValido()
@@ -26,7 +26,7 @@ public sealed class PurchaseFixture
             Guid.NewGuid(),
             request.Description,
             request.TransactionDate,
-            request.AmountUsd);
+            request.PurchaseAmount);
     }
 
     public GetPurchaseConvertedResult CriarGetPurchaseConvertedResult(

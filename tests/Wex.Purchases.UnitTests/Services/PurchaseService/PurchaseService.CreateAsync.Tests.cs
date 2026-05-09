@@ -100,15 +100,15 @@ public class PurchaseServiceCreateAsyncTests : IClassFixture<PurchaseFixture>
     [Theory]
     [InlineData(0)]
     [InlineData(-1)]
-    public async Task Testar_CreateAsync_AmountUsdInvalido_DeveGerarErro(decimal amountUsd)
+    public async Task Testar_CreateAsync_PurchaseAmountInvalido_DeveGerarErro(decimal purchaseAmount)
     {
-        var request = new CreatePurchaseRequest("Compra valida", DateTime.UtcNow.Date, amountUsd);
+        var request = new CreatePurchaseRequest("Compra valida", DateTime.UtcNow.Date, purchaseAmount);
 
         var exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
             _purchaseService.CreateAsync(request, CancellationToken.None));
 
         Assert.Equal("request", exception.ParamName);
-        Assert.Equal("AmountUsd must be positive. (Parameter 'request')", exception.Message);
+        Assert.Equal("PurchaseAmount must be positive. (Parameter 'request')", exception.Message);
         _mocker.GetMock<IPurchaseRepository>()
             .Verify(repository => repository.AddAsync(It.IsAny<PurchaseTransaction>(), It.IsAny<CancellationToken>()), Times.Never);
         _mocker.GetMock<ITreasuryApiService>()

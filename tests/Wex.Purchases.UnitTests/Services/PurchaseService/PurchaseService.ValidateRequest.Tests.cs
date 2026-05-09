@@ -42,25 +42,25 @@ public class PurchaseServiceValidateRequestTests
     [Theory]
     [InlineData(0)]
     [InlineData(-1)]
-    public void Testar_ValidateRequest_AmountUsdInvalido_DeveGerarErro(decimal amountUsd)
+    public void Testar_ValidateRequest_PurchaseAmountInvalido_DeveGerarErro(decimal purchaseAmount)
     {
-        var request = new CreatePurchaseRequest("Compra valida", DateTime.UtcNow.Date, amountUsd);
+        var request = new CreatePurchaseRequest("Compra valida", DateTime.UtcNow.Date, purchaseAmount);
 
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() => PurchaseService.ValidateRequest(request));
 
         Assert.Equal("request", exception.ParamName);
-        Assert.Equal("AmountUsd must be positive. (Parameter 'request')", exception.Message);
+        Assert.Equal("PurchaseAmount must be positive. (Parameter 'request')", exception.Message);
     }
 
     [Fact]
-    public void Testar_ValidateRequest_AmountUsdComMaisDeDuasCasasDecimais_DeveGerarErro()
+    public void Testar_ValidateRequest_PurchaseAmountComMaisDeDuasCasasDecimais_DeveGerarErro()
     {
         var request = new CreatePurchaseRequest("Compra valida", DateTime.UtcNow.Date, 10.123m);
 
         var exception = Assert.Throws<ArgumentException>(() => PurchaseService.ValidateRequest(request));
 
         Assert.Equal("request", exception.ParamName);
-        Assert.Equal("AmountUsd must have at most 2 decimal places. (Parameter 'request')", exception.Message);
+        Assert.Equal("PurchaseAmount must have at most 2 decimal places. (Parameter 'request')", exception.Message);
     }
 
     [Fact]

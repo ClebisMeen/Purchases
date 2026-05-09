@@ -17,11 +17,11 @@ public sealed class CreatePurchaseRequestValidator : AbstractValidator<CreatePur
             .NotEmpty()
             .WithMessage("TransactionDate must be a valid date.");
 
-        RuleFor(request => request.AmountUsd)
+        RuleFor(request => request.PurchaseAmount)
             .GreaterThan(0)
-            .WithMessage("AmountUsd must be positive.")
+            .WithMessage("PurchaseAmount must be positive.")
             .Must(HaveAtMostTwoDecimalPlaces)
-            .WithMessage("AmountUsd must have at most 2 decimal places.");
+            .WithMessage("PurchaseAmount must have at most 2 decimal places.");
     }
 
     private static bool HaveAtMostTwoDecimalPlaces(decimal amount)

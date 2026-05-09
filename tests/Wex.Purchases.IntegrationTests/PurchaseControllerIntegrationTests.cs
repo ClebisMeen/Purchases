@@ -92,7 +92,7 @@ public sealed class PurchaseControllerIntegrationTests : IClassFixture<WexPurcha
         Assert.NotEqual(Guid.Empty, result.Id);
         Assert.Equal(request.Description, result.Description);
         Assert.Equal(request.TransactionDate, result.TransactionDate);
-        Assert.Equal(request.AmountUsd, result.AmountUsd);
+        Assert.Equal(request.PurchaseAmount, result.AmountUsd);
     }
 
     [Fact]
@@ -114,6 +114,6 @@ public sealed class PurchaseControllerIntegrationTests : IClassFixture<WexPurcha
         Assert.NotNull(problemDetails);
         Assert.Contains("Description", problemDetails.Errors.Keys);
         Assert.Contains("TransactionDate", problemDetails.Errors.Keys);
-        Assert.Contains("AmountUsd", problemDetails.Errors.Keys);
+        Assert.Contains("PurchaseAmount", problemDetails.Errors.Keys);
     }
 }

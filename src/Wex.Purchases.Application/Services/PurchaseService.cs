@@ -31,7 +31,7 @@ public sealed class PurchaseService : IPurchaseService
     {
         ValidateRequest(request);
 
-        var roundedAmount = Money.FromAmount(request.AmountUsd).Amount;
+        var roundedAmount = Money.FromAmount(request.PurchaseAmount).Amount;
 
         var purchaseTransaction = new PurchaseTransaction(
             Guid.NewGuid(),
@@ -116,8 +116,8 @@ public sealed class PurchaseService : IPurchaseService
 
         var firstError = validationResult.Errors[0];
 
-        if (firstError.PropertyName == nameof(CreatePurchaseRequest.AmountUsd) &&
-            firstError.ErrorMessage == "AmountUsd must be positive.")
+        if (firstError.PropertyName == nameof(CreatePurchaseRequest.PurchaseAmount) &&
+            firstError.ErrorMessage == "PurchaseAmount must be positive.")
         {
             throw new ArgumentOutOfRangeException(nameof(request), firstError.ErrorMessage);
         }
