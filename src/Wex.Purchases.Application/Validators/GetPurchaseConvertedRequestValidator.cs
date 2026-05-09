@@ -9,7 +9,9 @@ public sealed class GetPurchaseConvertedRequestValidator : AbstractValidator<Get
     {
         RuleFor(request => request.PurchaseId)
             .NotEmpty()
-            .WithMessage("PurchaseId is required.");
+            .WithMessage("PurchaseId is required.")
+            .Must(BeValidPurchaseId)
+            .WithMessage("PurchaseId must be a valid GUID.");
 
         RuleFor(request => request.CountryCurrencyDescription)
             .NotEmpty()
@@ -32,5 +34,10 @@ public sealed class GetPurchaseConvertedRequestValidator : AbstractValidator<Get
         }
 
         return segments.All(segment => segment.All(character => char.IsLetter(character) || character == ' '));
+    }
+
+    private static bool BeValidPurchaseId(Guid purchaseId)
+    {
+        return purchaseId != Guid.Empty;
     }
 }

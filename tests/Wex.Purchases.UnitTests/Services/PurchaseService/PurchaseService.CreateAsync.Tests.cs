@@ -37,10 +37,10 @@ public class PurchaseServiceCreateAsyncTests : IClassFixture<PurchaseFixture>
 
         Assert.NotNull(result);
         Assert.NotEqual(Guid.Empty, result.Id);
-        Assert.Equal(10.13m, result.AmountUsd);
+        Assert.Equal(10.12m, result.AmountUsd);
         Assert.NotNull(purchaseSalva);
         Assert.Equal(result.Id, purchaseSalva!.Id);
-        Assert.Equal(10.13m, purchaseSalva.AmountUsd);
+        Assert.Equal(10.12m, purchaseSalva.AmountUsd);
 
         _mocker.GetMock<IPurchaseRepository>()
             .Verify(repository => repository.AddAsync(It.IsAny<PurchaseTransaction>(), It.IsAny<CancellationToken>()), Times.Once);

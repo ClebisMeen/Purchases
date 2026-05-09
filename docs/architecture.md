@@ -28,7 +28,7 @@ dotnet test tests\Wex.Purchases.IntegrationTests\Wex.Purchases.IntegrationTests.
 
 https://fiscaldata.treasury.gov/datasets/treasury-reporting-rates-exchange/treasury-reporting-rates-of-exchange#api-quick-guide
 
-
+https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v1/accounting/od/rates_of_exchange?filter=country_currency_desc:eq:Brazil-Real,record_date:lte:2026-05-09,record_date:gte:2025-11-09&sort=-record_date&page[size]=1
 
 
 docker compose up -d wex-mysql

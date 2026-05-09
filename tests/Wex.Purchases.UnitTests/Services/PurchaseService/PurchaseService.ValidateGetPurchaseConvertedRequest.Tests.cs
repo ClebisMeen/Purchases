@@ -18,12 +18,22 @@ public class PurchaseServiceValidateGetPurchaseConvertedRequestTests
     [Fact]
     public void Testar_ValidateGetPurchaseConvertedRequest_PurchaseIdVazio_DeveGerarErro()
     {
-        var request = new GetPurchaseConvertedRequest(Guid.Empty, "BRAZIL-REAL");
+        var request = new GetPurchaseConvertedRequest(Guid.Empty, "Brazil-Real");
 
         var exception = Assert.Throws<ArgumentException>(() => PurchaseService.ValidateGetPurchaseConvertedRequest(request));
 
         Assert.Equal("request", exception.ParamName);
         Assert.Equal("PurchaseId is required. (Parameter 'request')", exception.Message);
+    }
+
+    [Fact]
+    public void Testar_ValidateGetPurchaseConvertedRequest_PurchaseIdGuidValido_NaoDeveGerarErro()
+    {
+        var request = new GetPurchaseConvertedRequest(Guid.NewGuid(), "Brazil-Real");
+
+        var exception = Record.Exception(() => PurchaseService.ValidateGetPurchaseConvertedRequest(request));
+
+        Assert.Null(exception);
     }
 
     [Theory]

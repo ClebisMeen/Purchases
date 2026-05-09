@@ -40,7 +40,7 @@ public sealed class PurchaseServiceCachingDecorator : IPurchaseService
         GetPurchaseConvertedRequest request,
         CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(request);
+        PurchaseService.ValidateGetPurchaseConvertedRequest(request);
 
         var cacheKey = CreateGetByIdCacheKey(request.PurchaseId, request.CountryCurrencyDescription);
         var cachedResult = await _cache.GetStringAsync(cacheKey, cancellationToken);

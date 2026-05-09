@@ -113,6 +113,30 @@ public class PurchaseServiceCachingDecoratorTests : IClassFixture<PurchaseFixtur
     }
 
     [Fact]
+    public async Task GetByIdAsync_RequestInvalido_DeveGerarErroSemAcessarCacheOuInner()
+    {
+        // Arrange
+        var request = new GetPurchaseConvertedRequest(Guid.Empty, "Brazil-Real");
+
+        // Act
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => _decorator.GetByIdAsync(request, CancellationToken.None));
+
+        // Assert
+        Assert.Equal("request", exception.ParamName);
+        Assert.Equal("PurchaseId is required. (Parameter 'request')", exception.Message);
+        _mocker.GetMock<IPurchaseService>()
+            .Verify(service => service.GetByIdAsync(It.IsAny<GetPurchaseConvertedRequest>(), It.IsAny<CancellationToken>()), Times.Never);
+        _mocker.GetMock<IDistributedCache>()
+            .Verify(cache => cache.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        _mocker.GetMock<IDistributedCache>()
+            .Verify(cache => cache.SetAsync(
+                It.IsAny<string>(),
+                It.IsAny<byte[]>(),
+                It.IsAny<DistributedCacheEntryOptions>(),
+                It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
     public async Task CreateAsync_DeveDelegarParaInnerSemUsarCache()
     {
         // Arrange

@@ -152,7 +152,7 @@ public class PurchaseServiceGetByIdAsyncTests
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             _purchaseService.GetPurchaseConvertedAsync(purchaseTransaction, countryCurrencyDescription, CancellationToken.None));
 
-        Assert.Equal("No exchange rate was found for 'BRAZIL-REAL' on or before '2026-05-09'.", exception.Message);
+        Assert.Equal("No exchange rate was found for 'Brazil-Real' on or before '2026-05-09'.", exception.Message);
         _mocker.GetMock<ITreasuryApiService>()
             .Verify(service => service.GetExchangeRateAsync(It.IsAny<GetTreasuryExchangeRateApiRequest>(), It.IsAny<CancellationToken>()), Times.Once);
     }
