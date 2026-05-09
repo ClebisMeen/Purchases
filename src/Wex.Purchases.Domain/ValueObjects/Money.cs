@@ -1,6 +1,6 @@
 namespace Wex.Purchases.Domain.ValueObjects;
 
-public readonly record struct Money
+public sealed record Money : ValueObject
 {
     public decimal Amount { get; }
 

@@ -1,19 +1,13 @@
 namespace Wex.Purchases.Domain.Entities;
 
-public class PurchaseTransaction : Entity
+public class PurchaseTransaction : Entity, IAggregateRoot
 {
-    public Guid Id { get; private set; }
     public string Description { get; private set; }
     public DateTime TransactionDate { get; private set; }
     public decimal AmountUsd { get; private set; }
 
-    public PurchaseTransaction(Guid id, string description, DateTime transactionDate, decimal amountUsd)
+    public PurchaseTransaction(Guid id, string description, DateTime transactionDate, decimal amountUsd) : base(id)
     {
-        if (id == Guid.Empty)
-        {
-            throw new ArgumentException("Id is required.", nameof(id));
-        }
-
         if (string.IsNullOrWhiteSpace(description))
         {
             throw new ArgumentException("Description is required.", nameof(description));
@@ -34,7 +28,6 @@ public class PurchaseTransaction : Entity
             throw new ArgumentOutOfRangeException(nameof(amountUsd), "AmountUsd must be positive.");
         }
 
-        Id = id;
         Description = description;
         TransactionDate = transactionDate;
         AmountUsd = decimal.Round(amountUsd, 2, MidpointRounding.AwayFromZero);
