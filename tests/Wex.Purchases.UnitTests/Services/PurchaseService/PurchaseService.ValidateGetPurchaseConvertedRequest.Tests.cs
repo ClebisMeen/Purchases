@@ -1,0 +1,51 @@
+using Wex.Purchases.Application.Requests;
+using Wex.Purchases.Application.Services;
+
+namespace Wex.Purchases.UnitTests.Services;
+
+public class PurchaseServiceValidateGetPurchaseConvertedRequestTests
+{
+    [Fact]
+    public void Testar_ValidateGetPurchaseConvertedRequest_RequestNulo_DeveGerarErro()
+    {
+        GetPurchaseConvertedRequest request = null!;
+
+        var exception = Assert.Throws<ArgumentNullException>(() => PurchaseService.ValidateGetPurchaseConvertedRequest(request));
+
+        Assert.Equal("request", exception.ParamName);
+    }
+
+    [Fact]
+    public void Testar_ValidateGetPurchaseConvertedRequest_PurchaseIdVazio_DeveGerarErro()
+    {
+        var request = new GetPurchaseConvertedRequest(Guid.Empty, "BRAZIL-REAL");
+
+        var exception = Assert.Throws<ArgumentException>(() => PurchaseService.ValidateGetPurchaseConvertedRequest(request));
+
+        Assert.Equal("request", exception.ParamName);
+        Assert.Equal("PurchaseId is required. (Parameter 'request')", exception.Message);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(" ")]
+    public void Testar_ValidateGetPurchaseConvertedRequest_CountryCurrencyDescriptionInvalido_DeveGerarErro(string countryCurrencyDescription)
+    {
+        var request = new GetPurchaseConvertedRequest(Guid.NewGuid(), countryCurrencyDescription);
+
+        var exception = Assert.Throws<ArgumentException>(() => PurchaseService.ValidateGetPurchaseConvertedRequest(request));
+
+        Assert.Equal("request", exception.ParamName);
+        Assert.Equal("CountryCurrencyDescription is required. (Parameter 'request')", exception.Message);
+    }
+
+    [Fact]
+    public void Testar_ValidateGetPurchaseConvertedRequest_Valido_NaoDeveGerarErro()
+    {
+        var request = new GetPurchaseConvertedRequest(Guid.NewGuid(), "BRAZIL-REAL");
+
+        var exception = Record.Exception(() => PurchaseService.ValidateGetPurchaseConvertedRequest(request));
+
+        Assert.Null(exception);
+    }
+}
