@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using Microsoft.AspNetCore.Mvc;
 using Wex.Purchases.Application.Results;
 using Wex.Purchases.Contracts.Requests;
 using Wex.Purchases.Contracts.Results;
@@ -58,5 +59,27 @@ public sealed class PurchaseControllerIntegrationTests : IClassFixture<WexPurcha
         Assert.Equal(request.Description, result.Description);
         Assert.Equal(request.TransactionDate, result.TransactionDate);
         Assert.Equal(request.AmountUsd, result.AmountUsd);
+    }
+
+    [Fact]
+    public async Task CreatePurchase_WhenRequestIsInvalid_ReturnsBadRequest()
+    {
+        // Arrange
+        var request = new CreatePurchaseRequest(
+            "",
+            default,
+            123.456m);
+
+        // Act
+        var response = await _client.PostAsJsonAsync("/api/purchases", request);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+        var problemDetails = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
+        Assert.NotNull(problemDetails);
+        Assert.Contains("Description", problemDetails.Errors.Keys);
+        Assert.Contains("TransactionDate", problemDetails.Errors.Keys);
+        Assert.Contains("AmountUsd", problemDetails.Errors.Keys);
     }
 }

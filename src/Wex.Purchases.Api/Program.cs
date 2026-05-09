@@ -1,3 +1,4 @@
+using FluentValidation.AspNetCore;
 using Wex.Purchases.Application.DependencyInjection;
 using Wex.Purchases.Infrastructure.MySql.DependencyInjection;
 using Wex.Purchases.Infrastructure.MySql.Persistence;
@@ -9,6 +10,7 @@ using Wex.Purchases.Application.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddEndpointsApiExplorer();

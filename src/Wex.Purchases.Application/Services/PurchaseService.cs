@@ -1,5 +1,7 @@
 using System.Runtime.CompilerServices;
+using FluentValidation;
 using Wex.Purchases.Application.Repositories;
+using Wex.Purchases.Application.Validators;
 using Wex.Purchases.Application.Requests;
 using Wex.Purchases.Application.Results;
 using Wex.Purchases.Contracts.Requests;
@@ -106,25 +108,21 @@ public sealed class PurchaseService : IPurchaseService
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        if (string.IsNullOrWhiteSpace(request.Description))
+        var validationResult = new CreatePurchaseRequestValidator().Validate(request);
+        if (validationResult.IsValid)
         {
-            throw new ArgumentException("Description is required.", nameof(request));
+            return;
         }
 
-        if (request.Description.Length > 50)
+        var firstError = validationResult.Errors[0];
+
+        if (firstError.PropertyName == nameof(CreatePurchaseRequest.AmountUsd) &&
+            firstError.ErrorMessage == "AmountUsd must be positive.")
         {
-            throw new ArgumentException("Description must be at most 50 characters.", nameof(request));
+            throw new ArgumentOutOfRangeException(nameof(request), firstError.ErrorMessage);
         }
 
-        if (request.AmountUsd <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(request), "AmountUsd must be positive.");
-        }
-
-        if (request.TransactionDate == default)
-        {
-            throw new ArgumentException("TransactionDate must be a valid date.", nameof(request));
-        }
+        throw new ArgumentException(firstError.ErrorMessage, nameof(request));
     }
 
     internal static void ValidateGetPurchaseConvertedRequest(GetPurchaseConvertedRequest request)

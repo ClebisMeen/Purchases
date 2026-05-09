@@ -53,6 +53,17 @@ public class PurchaseServiceValidateRequestTests
     }
 
     [Fact]
+    public void Testar_ValidateRequest_AmountUsdComMaisDeDuasCasasDecimais_DeveGerarErro()
+    {
+        var request = new CreatePurchaseRequest("Compra valida", DateTime.UtcNow.Date, 10.123m);
+
+        var exception = Assert.Throws<ArgumentException>(() => PurchaseService.ValidateRequest(request));
+
+        Assert.Equal("request", exception.ParamName);
+        Assert.Equal("AmountUsd must have at most 2 decimal places. (Parameter 'request')", exception.Message);
+    }
+
+    [Fact]
     public void Testar_ValidateRequest_TransactionDateDefault_DeveGerarErro()
     {
         var request = new CreatePurchaseRequest("Compra valida", default, 10m);
