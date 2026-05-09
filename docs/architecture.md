@@ -23,6 +23,7 @@ docker compose up -d wex-mysql
 dotnet ef database update --project .\src\Wex.Purchases.Infrastructure\Wex.Purchases.Infrastructure.csproj --startup-project .\src\Wex.Purchases.Api\Wex.Purchases.Api.csproj
 
 
-dotnet test "tests\Wex.Purchases.UnitTests\Wex.Purchases.UnitTests.csproj
+dotnet test tests\Wex.Purchases.UnitTests\Wex.Purchases.UnitTests.csproj
+dotnet test tests\Wex.Purchases.IntegrationTests\Wex.Purchases.IntegrationTests.csproj
 
 # architecture
