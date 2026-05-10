@@ -1,6 +1,17 @@
 @Wex.Purchases.Api_HostAddress = http://localhost:5063
 
-GET {{Wex.Purchases.Api_HostAddress}}/weatherforecast/
+POST {{Wex.Purchases.Api_HostAddress}}/api/purchases
+Content-Type: application/json
+
+{
+  "description": "Book purchase",
+  "transactionDate": "2026-05-09T00:00:00Z",
+  "purchaseAmount": 100.00
+}
+
+###
+
+GET {{Wex.Purchases.Api_HostAddress}}/api/purchases/00000000-0000-0000-0000-000000000000?countryCode=BR
 Accept: application/json
 
 ###

@@ -18,7 +18,7 @@ public class PurchaseServiceValidateGetPurchaseConvertedRequestTests
     [Fact]
     public void Testar_ValidateGetPurchaseConvertedRequest_PurchaseIdVazio_DeveGerarErro()
     {
-        var request = new GetPurchaseConvertedRequest(Guid.Empty, "Brazil-Real");
+        var request = new GetPurchaseConvertedRequest(Guid.Empty, "BR");
 
         var exception = Assert.Throws<ArgumentException>(() => PurchaseService.ValidateGetPurchaseConvertedRequest(request));
 
@@ -29,7 +29,7 @@ public class PurchaseServiceValidateGetPurchaseConvertedRequestTests
     [Fact]
     public void Testar_ValidateGetPurchaseConvertedRequest_PurchaseIdGuidValido_NaoDeveGerarErro()
     {
-        var request = new GetPurchaseConvertedRequest(Guid.NewGuid(), "Brazil-Real");
+        var request = new GetPurchaseConvertedRequest(Guid.NewGuid(), "BR");
 
         var exception = Record.Exception(() => PurchaseService.ValidateGetPurchaseConvertedRequest(request));
 
@@ -39,36 +39,38 @@ public class PurchaseServiceValidateGetPurchaseConvertedRequestTests
     [Theory]
     [InlineData("")]
     [InlineData(" ")]
-    public void Testar_ValidateGetPurchaseConvertedRequest_CountryCurrencyDescriptionInvalido_DeveGerarErro(string countryCurrencyDescription)
+    public void Testar_ValidateGetPurchaseConvertedRequest_CountryCodeObrigatorio_DeveGerarErro(string countryCode)
     {
-        var request = new GetPurchaseConvertedRequest(Guid.NewGuid(), countryCurrencyDescription);
+        var request = new GetPurchaseConvertedRequest(Guid.NewGuid(), countryCode);
 
         var exception = Assert.Throws<ArgumentException>(() => PurchaseService.ValidateGetPurchaseConvertedRequest(request));
 
         Assert.Equal("request", exception.ParamName);
-        Assert.Equal("CountryCurrencyDescription is required. (Parameter 'request')", exception.Message);
+        Assert.Equal("countryCode is required. (Parameter 'request')", exception.Message);
     }
 
     [Theory]
-    [InlineData("Brazil")]
-    [InlineData("Brazil-")]
-    [InlineData("-Real")]
-    [InlineData("Brazil-Real-Extra")]
-    [InlineData("Brazil-123")]
-    public void Testar_ValidateGetPurchaseConvertedRequest_CountryCurrencyDescriptionForaDoFormatoEsperado_DeveGerarErro(string countryCurrencyDescription)
+    [InlineData("US")]
+    [InlineData("Brazil-Real")]
+    [InlineData("Canada-Dollar")]
+    [InlineData("Mexico-Peso")]
+    public void Testar_ValidateGetPurchaseConvertedRequest_CountryCodeInvalido_DeveGerarErro(string countryCode)
     {
-        var request = new GetPurchaseConvertedRequest(Guid.NewGuid(), countryCurrencyDescription);
+        var request = new GetPurchaseConvertedRequest(Guid.NewGuid(), countryCode);
 
         var exception = Assert.Throws<ArgumentException>(() => PurchaseService.ValidateGetPurchaseConvertedRequest(request));
 
         Assert.Equal("request", exception.ParamName);
-        Assert.Equal("CountryCurrencyDescription must match a supported Treasury API description format, for example: Brazil-Real. (Parameter 'request')", exception.Message);
+        Assert.Equal("Invalid countryCode. Accepted values are: BR, CA, MX. (Parameter 'request')", exception.Message);
     }
 
-    [Fact]
-    public void Testar_ValidateGetPurchaseConvertedRequest_Valido_NaoDeveGerarErro()
+    [Theory]
+    [InlineData("BR")]
+    [InlineData("br")]
+    [InlineData("Br")]
+    public void Testar_ValidateGetPurchaseConvertedRequest_CountryCodeValido_NaoDeveGerarErro(string countryCode)
     {
-        var request = new GetPurchaseConvertedRequest(Guid.NewGuid(), "Brazil-Real");
+        var request = new GetPurchaseConvertedRequest(Guid.NewGuid(), countryCode);
 
         var exception = Record.Exception(() => PurchaseService.ValidateGetPurchaseConvertedRequest(request));
 

@@ -22,7 +22,7 @@ public sealed class PurchaseControllerIntegrationTests : IClassFixture<WexPurcha
         // Arrange
         var purchaseId = WexPurchasesFactory.ExistingPurchaseId1;
         var currencyDescription = "Brazil-Real";
-        var url = $"/api/purchases/{purchaseId}?countryCurrencyDescription={currencyDescription}";
+        var url = $"/api/purchases/{purchaseId}?countryCode=BR";
 
         // Act
         var response = await _client.GetAsync(url);
@@ -39,11 +39,11 @@ public sealed class PurchaseControllerIntegrationTests : IClassFixture<WexPurcha
     }
 
     [Fact]
-    public async Task GetPurchaseById_WhenCountryCurrencyDescriptionIsEmpty_ReturnsBadRequest()
+    public async Task GetPurchaseById_WhenCountryCodeIsEmpty_ReturnsBadRequest()
     {
         // Arrange
         var purchaseId = WexPurchasesFactory.ExistingPurchaseId1;
-        var url = $"/api/purchases/{purchaseId}?countryCurrencyDescription=";
+        var url = $"/api/purchases/{purchaseId}?countryCode=";
 
         // Act
         var response = await _client.GetAsync(url);
@@ -60,7 +60,7 @@ public sealed class PurchaseControllerIntegrationTests : IClassFixture<WexPurcha
     public async Task GetPurchaseById_WhenIdentifierIsInvalid_ReturnsBadRequest()
     {
         // Arrange
-        var url = "/api/purchases/not-a-guid?countryCurrencyDescription=Brazil-Real";
+        var url = "/api/purchases/not-a-guid?countryCode=BR";
 
         // Act
         var response = await _client.GetAsync(url);

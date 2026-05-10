@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using FluentValidation;
+using Wex.Purchases.Application.Currencies;
 using Wex.Purchases.Application.Repositories;
 using Wex.Purchases.Application.Validators;
 using Wex.Purchases.Application.Requests;
@@ -62,9 +63,11 @@ public sealed class PurchaseService : IPurchaseService
             return null;
         }
 
+        var supportedCurrency = SupportedCurrencyCatalog.GetByCountryCode(request.CountryCode);
+
         var result = await GetPurchaseConvertedAsync(
             purchaseTransaction,
-            request.CountryCurrencyDescription,
+            supportedCurrency.CurrencyDescription,
             cancellationToken);
 
         return result;

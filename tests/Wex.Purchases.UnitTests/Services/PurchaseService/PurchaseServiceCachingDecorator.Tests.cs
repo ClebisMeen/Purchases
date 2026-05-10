@@ -31,8 +31,8 @@ public class PurchaseServiceCachingDecoratorTests : IClassFixture<PurchaseFixtur
         var request = _purchaseFixture.GerarGetPurchaseConvertedRequestValido();
         var expectedResult = _purchaseFixture.CriarGetPurchaseConvertedResult(
             request.PurchaseId,
-            request.CountryCurrencyDescription);
-        var expectedCacheKey = $"purchases:get-by-id:{request.PurchaseId}:{request.CountryCurrencyDescription}";
+            "Brazil-Real");
+        var expectedCacheKey = $"purchases:get-by-id:{request.PurchaseId}:BR";
         byte[]? cachedBytes = null;
         DistributedCacheEntryOptions? cacheOptions = null;
 
@@ -87,8 +87,8 @@ public class PurchaseServiceCachingDecoratorTests : IClassFixture<PurchaseFixtur
         var request = _purchaseFixture.GerarGetPurchaseConvertedRequestValido();
         var expectedResult = _purchaseFixture.CriarGetPurchaseConvertedResult(
             request.PurchaseId,
-            request.CountryCurrencyDescription);
-        var expectedCacheKey = $"purchases:get-by-id:{request.PurchaseId}:{request.CountryCurrencyDescription}";
+            "Brazil-Real");
+        var expectedCacheKey = $"purchases:get-by-id:{request.PurchaseId}:BR";
         var cachedBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(expectedResult, JsonSerializerOptions));
 
         _mocker.GetMock<IDistributedCache>()
@@ -116,7 +116,7 @@ public class PurchaseServiceCachingDecoratorTests : IClassFixture<PurchaseFixtur
     public async Task GetByIdAsync_RequestInvalido_DeveGerarErroSemAcessarCacheOuInner()
     {
         // Arrange
-        var request = new GetPurchaseConvertedRequest(Guid.Empty, "Brazil-Real");
+        var request = new GetPurchaseConvertedRequest(Guid.Empty, "BR");
 
         // Act
         var exception = await Assert.ThrowsAsync<ArgumentException>(() => _decorator.GetByIdAsync(request, CancellationToken.None));

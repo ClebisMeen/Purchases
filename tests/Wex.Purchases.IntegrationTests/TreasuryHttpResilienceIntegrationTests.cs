@@ -29,7 +29,7 @@ public sealed class TreasuryHttpResilienceIntegrationTests : IClassFixture<Treas
         using var client = factory.CreateClient();
 
         // Act
-        var response = await client.GetAsync($"/api/purchases/{ExistingPurchaseId}?countryCurrencyDescription=Brazil-Real");
+        var response = await client.GetAsync($"/api/purchases/{ExistingPurchaseId}?countryCode=BR");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -51,7 +51,7 @@ public sealed class TreasuryHttpResilienceIntegrationTests : IClassFixture<Treas
         using var client = factory.CreateClient();
 
         // Act
-        var response = await client.GetAsync($"/api/purchases/{ExistingPurchaseId}?countryCurrencyDescription=Brazil-Real");
+        var response = await client.GetAsync($"/api/purchases/{ExistingPurchaseId}?countryCode=BR");
 
         // Assert
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);

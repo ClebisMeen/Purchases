@@ -38,7 +38,7 @@ public class PurchaseServiceGetByIdAsyncTests
     [Fact]
     public async Task Testar_GetByIdAsync_PurchaseIdVazio_DeveGerarErro()
     {
-        var request = new GetPurchaseConvertedRequest(Guid.Empty, "Brazil-Real");
+        var request = new GetPurchaseConvertedRequest(Guid.Empty, "BR");
 
         var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
             _purchaseService.GetByIdAsync(request, CancellationToken.None));
@@ -54,15 +54,15 @@ public class PurchaseServiceGetByIdAsyncTests
     [Theory]
     [InlineData("")]
     [InlineData(" ")]
-    public async Task Testar_GetByIdAsync_CountryCurrencyDescriptionInvalido_DeveGerarErro(string countryCurrencyDescription)
+    public async Task Testar_GetByIdAsync_CountryCodeObrigatorio_DeveGerarErro(string countryCode)
     {
-        var request = new GetPurchaseConvertedRequest(Guid.NewGuid(), countryCurrencyDescription);
+        var request = new GetPurchaseConvertedRequest(Guid.NewGuid(), countryCode);
 
         var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
             _purchaseService.GetByIdAsync(request, CancellationToken.None));
 
         Assert.Equal("request", exception.ParamName);
-        Assert.Equal("CountryCurrencyDescription is required. (Parameter 'request')", exception.Message);
+        Assert.Equal("countryCode is required. (Parameter 'request')", exception.Message);
         _mocker.GetMock<IPurchaseRepository>()
             .Verify(repository => repository.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
         _mocker.GetMock<ITreasuryApiService>()
@@ -70,15 +70,15 @@ public class PurchaseServiceGetByIdAsyncTests
     }
 
     [Fact]
-    public async Task Testar_GetByIdAsync_CountryCurrencyDescriptionForaDoFormatoEsperado_DeveGerarErro()
+    public async Task Testar_GetByIdAsync_CountryCodeInvalido_DeveGerarErro()
     {
-        var request = new GetPurchaseConvertedRequest(Guid.NewGuid(), "Brazil");
+        var request = new GetPurchaseConvertedRequest(Guid.NewGuid(), "Brazil-Real");
 
         var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
             _purchaseService.GetByIdAsync(request, CancellationToken.None));
 
         Assert.Equal("request", exception.ParamName);
-        Assert.Equal("CountryCurrencyDescription must match a supported Treasury API description format, for example: Brazil-Real. (Parameter 'request')", exception.Message);
+        Assert.Equal("Invalid countryCode. Accepted values are: BR, CA, MX. (Parameter 'request')", exception.Message);
         _mocker.GetMock<IPurchaseRepository>()
             .Verify(repository => repository.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
         _mocker.GetMock<ITreasuryApiService>()
@@ -88,7 +88,7 @@ public class PurchaseServiceGetByIdAsyncTests
     [Fact]
     public async Task Testar_GetByIdAsync_CompraNaoEncontrada_DeveRetornarNulo()
     {
-        var request = new GetPurchaseConvertedRequest(Guid.NewGuid(), "Brazil-Real");
+        var request = new GetPurchaseConvertedRequest(Guid.NewGuid(), "BR");
 
         _mocker.GetMock<IPurchaseRepository>()
             .Setup(repository => repository.GetByIdAsync(request.PurchaseId, It.IsAny<CancellationToken>()))
@@ -107,7 +107,7 @@ public class PurchaseServiceGetByIdAsyncTests
     public async Task Testar_GetByIdAsync_Valido_DeveRetornarCompraConvertida()
     {
         var purchaseId = Guid.NewGuid();
-        var request = new GetPurchaseConvertedRequest(purchaseId, "Brazil-Real");
+        var request = new GetPurchaseConvertedRequest(purchaseId, "br");
         var purchaseTransaction = new PurchaseTransaction(purchaseId, "Compra valida", new DateTime(2026, 05, 09), 100m);
         var exchangeRateResult = new GetTreasuryExchangeRateApiResult("Brazil", "Real", "Brazil-Real", 5.25m, new DateOnly(2026, 05, 08));
 
@@ -117,7 +117,7 @@ public class PurchaseServiceGetByIdAsyncTests
         _mocker.GetMock<ITreasuryApiService>()
             .Setup(service => service.GetExchangeRateAsync(
                 It.Is<GetTreasuryExchangeRateApiRequest>(treasuryRequest =>
-                    treasuryRequest.CountryCurrencyDescription == request.CountryCurrencyDescription &&
+                    treasuryRequest.CountryCurrencyDescription == "Brazil-Real" &&
                     treasuryRequest.PurchaseDate == DateOnly.FromDateTime(purchaseTransaction.TransactionDate)),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(exchangeRateResult);

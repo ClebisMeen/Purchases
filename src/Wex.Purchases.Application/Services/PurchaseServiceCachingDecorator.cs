@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
+using Wex.Purchases.Application.Currencies;
 using Wex.Purchases.Application.Requests;
 using Wex.Purchases.Application.Results;
 using Wex.Purchases.Contracts.Requests;
@@ -42,7 +43,8 @@ public sealed class PurchaseServiceCachingDecorator : IPurchaseService
     {
         PurchaseService.ValidateGetPurchaseConvertedRequest(request);
 
-        var cacheKey = CreateGetByIdCacheKey(request.PurchaseId, request.CountryCurrencyDescription);
+        var supportedCurrency = SupportedCurrencyCatalog.GetByCountryCode(request.CountryCode);
+        var cacheKey = CreateGetByIdCacheKey(request.PurchaseId, supportedCurrency.CountryCode);
         var cachedResult = await _cache.GetStringAsync(cacheKey, cancellationToken);
 
 
@@ -75,8 +77,8 @@ public sealed class PurchaseServiceCachingDecorator : IPurchaseService
         return result;
     }
 
-    private static string CreateGetByIdCacheKey(Guid purchaseId, string countryCurrencyDescription)
+    private static string CreateGetByIdCacheKey(Guid purchaseId, string countryCode)
     {
-        return $"purchases:get-by-id:{purchaseId}:{countryCurrencyDescription}";
+        return $"purchases:get-by-id:{purchaseId}:{countryCode}";
     }
 }

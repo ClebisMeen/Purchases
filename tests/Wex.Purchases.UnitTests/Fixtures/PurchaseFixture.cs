@@ -17,7 +17,7 @@ public sealed class PurchaseFixture
 
     public GetPurchaseConvertedRequest GerarGetPurchaseConvertedRequestValido()
     {
-        return new GetPurchaseConvertedRequest(Guid.NewGuid(), "Brazil-Real");
+        return new GetPurchaseConvertedRequest(Guid.NewGuid(), "BR");
     }
 
     public CreatePurchaseResult GerarCreatePurchaseResultValido(CreatePurchaseRequest request)

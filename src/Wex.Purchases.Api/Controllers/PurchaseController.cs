@@ -30,10 +30,10 @@ public sealed class PurchaseController : ControllerBase
     [HttpGet("{id}", Name = "GetPurchaseById")]
     public async Task<ActionResult<GetPurchaseConvertedResult>> GetByIdAsync(
         Guid id,
-        [FromQuery] string countryCurrencyDescription,
+        [FromQuery] string countryCode,
         CancellationToken cancellationToken)
     {
-        var request = new GetPurchaseConvertedRequest(id, countryCurrencyDescription);
+        var request = new GetPurchaseConvertedRequest(id, countryCode);
         var result = await _purchaseService.GetByIdAsync(request, cancellationToken);
         return Ok(result);
     }
