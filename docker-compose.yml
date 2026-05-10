@@ -10,13 +10,13 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__PurchaseDb: server=wex-mysql;port=3306;database=wex_purchases;user=wex;password=wex123
-      ConnectionStrings__Redis: redis:6379
+      ConnectionStrings__Redis: wex-redis:6379
     ports:
       - "8080:8080"
     depends_on:
       wex-mysql:
         condition: service_healthy
-      redis:
+      wex-redis:
         condition: service_started
     restart: unless-stopped
 
