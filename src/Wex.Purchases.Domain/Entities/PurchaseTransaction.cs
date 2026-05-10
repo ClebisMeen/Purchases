@@ -1,11 +1,28 @@
 namespace Wex.Purchases.Domain.Entities;
 
+/// <summary>
+/// Represents a purchase transaction stored by the application.
+/// </summary>
 public class PurchaseTransaction : Entity, IAggregateRoot
 {
+    /// <summary>
+    /// Gets the purchase description.
+    /// </summary>
     public string Description { get; private set; }
+
+    /// <summary>
+    /// Gets the date when the purchase occurred.
+    /// </summary>
     public DateTime TransactionDate { get; private set; }
+
+    /// <summary>
+    /// Gets the purchase amount in USD.
+    /// </summary>
     public decimal AmountUsd { get; private set; }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PurchaseTransaction"/> class.
+    /// </summary>
     public PurchaseTransaction(Guid id, string description, DateTime transactionDate, decimal amountUsd) : base(id)
     {
         if (string.IsNullOrWhiteSpace(description))

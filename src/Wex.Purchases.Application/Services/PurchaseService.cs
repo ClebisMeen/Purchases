@@ -9,17 +9,26 @@ using Wex.Purchases.Infrastructure.Treasury.Services;
 [assembly: InternalsVisibleTo("Wex.Purchases.UnitTests")]
 namespace Wex.Purchases.Application.Services;
 
+/// <summary>
+/// Implements the core purchase use cases and currency-conversion workflow.
+/// </summary>
 public sealed class PurchaseService : IPurchaseService
 {
     private readonly IPurchaseRepository _purchaseRepository;
     private readonly ITreasuryApiService _treasuryApiService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PurchaseService"/> class.
+    /// </summary>
     public PurchaseService(IPurchaseRepository purchaseRepository, ITreasuryApiService treasuryApiService)
     {
         _purchaseRepository = purchaseRepository ?? throw new ArgumentNullException(nameof(purchaseRepository));
         _treasuryApiService = treasuryApiService ?? throw new ArgumentNullException(nameof(treasuryApiService));
     }
 
+    /// <summary>
+    /// Validates and stores a new purchase transaction.
+    /// </summary>
     public async Task<CreatePurchaseResult> CreateAsync(
         CreatePurchaseRequest request,
         CancellationToken cancellationToken = default)
@@ -45,6 +54,9 @@ public sealed class PurchaseService : IPurchaseService
         return result;
     }
 
+    /// <summary>
+    /// Retrieves a purchase and converts its amount to the currency associated with the requested country code.
+    /// </summary>
     public async Task<GetPurchaseConvertedResult?> GetByIdAsync(
         GetPurchaseConvertedRequest request,
         CancellationToken cancellationToken = default)
@@ -67,6 +79,9 @@ public sealed class PurchaseService : IPurchaseService
         return result;
     }
 
+    /// <summary>
+    /// Converts a purchase amount using the most recent treasury exchange rate available for the purchase date.
+    /// </summary>
     internal async Task<GetPurchaseConvertedResult> GetPurchaseConvertedAsync(
         PurchaseTransaction purchaseTransaction,
         string countryCurrencyDescription,
@@ -101,6 +116,9 @@ public sealed class PurchaseService : IPurchaseService
         return result;
     }
 
+    /// <summary>
+    /// Validates the request used to create a purchase transaction.
+    /// </summary>
     internal static void ValidateRequest(CreatePurchaseRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -122,6 +140,9 @@ public sealed class PurchaseService : IPurchaseService
         throw new ArgumentException(firstError.ErrorMessage, nameof(request));
     }
 
+    /// <summary>
+    /// Validates the request used to retrieve a converted purchase.
+    /// </summary>
     internal static void ValidateGetPurchaseConvertedRequest(GetPurchaseConvertedRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);

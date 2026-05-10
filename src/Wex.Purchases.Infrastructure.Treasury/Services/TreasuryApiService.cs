@@ -4,6 +4,9 @@ using System.Text.Json.Serialization;
 
 namespace Wex.Purchases.Infrastructure.Treasury.Services;
 
+/// <summary>
+/// Retrieves exchange-rate data from the public Treasury API.
+/// </summary>
 public sealed class TreasuryApiService(HttpClient httpClient, IOptions<TreasuryApiOptions> options) : ITreasuryApiService
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -12,6 +15,9 @@ public sealed class TreasuryApiService(HttpClient httpClient, IOptions<TreasuryA
         NumberHandling = JsonNumberHandling.AllowReadingFromString
     };
 
+    /// <summary>
+    /// Gets the most recent exchange rate available for the provided currency description and purchase date.
+    /// </summary>
     public async Task<GetTreasuryExchangeRateApiResult?> GetExchangeRateAsync(
         GetTreasuryExchangeRateApiRequest request,
         CancellationToken cancellationToken)

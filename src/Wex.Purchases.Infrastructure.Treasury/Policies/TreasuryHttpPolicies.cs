@@ -5,8 +5,14 @@ using Polly.Timeout;
 
 namespace Wex.Purchases.Infrastructure.Treasury.Policies;
 
+/// <summary>
+/// Provides resilience policies used when calling the Treasury API.
+/// </summary>
 public static class TreasuryHttpPolicies
 {
+    /// <summary>
+    /// Gets the number of retry attempts configured for transient Treasury API failures.
+    /// </summary>
     public const int RetryAttempts = 3;
 
     private static readonly HttpStatusCode[] AdditionalRetryStatusCodes =
@@ -14,9 +20,15 @@ public static class TreasuryHttpPolicies
         HttpStatusCode.TooManyRequests,
     ];
 
+    /// <summary>
+    /// Creates the default retry policy for Treasury API calls.
+    /// </summary>
     public static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy(ILogger logger) =>
         GetRetryPolicy(logger, GetExponentialBackoffDelay);
 
+    /// <summary>
+    /// Creates a retry policy for Treasury API calls using a custom delay strategy.
+    /// </summary>
     public static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy(
         ILogger logger,
         Func<int, TimeSpan> sleepDurationProvider)
@@ -48,6 +60,9 @@ public static class TreasuryHttpPolicies
                 });
     }
 
+    /// <summary>
+    /// Creates a timeout policy for Treasury API calls.
+    /// </summary>
     public static IAsyncPolicy<HttpResponseMessage> GetTimeoutPolicy(TimeSpan timeout)
     {
         if (timeout <= TimeSpan.Zero)
@@ -56,6 +71,9 @@ public static class TreasuryHttpPolicies
         return Policy.TimeoutAsync<HttpResponseMessage>(timeout, TimeoutStrategy.Optimistic);
     }
 
+    /// <summary>
+    /// Calculates the exponential backoff delay for a retry attempt.
+    /// </summary>
     public static TimeSpan GetExponentialBackoffDelay(int retryAttempt) =>
         TimeSpan.FromSeconds(Math.Pow(2, retryAttempt));
 }

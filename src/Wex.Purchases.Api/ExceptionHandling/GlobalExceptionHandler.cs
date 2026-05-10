@@ -3,15 +3,24 @@ using Microsoft.AspNetCore.Diagnostics;
 
 namespace Wex.Purchases.Api.ExceptionHandling;
 
+/// <summary>
+/// Converts unhandled exceptions into RFC 7807 problem details responses.
+/// </summary>
 public sealed class GlobalExceptionHandler : IExceptionHandler
 {
     private readonly ILogger<GlobalExceptionHandler> _logger;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GlobalExceptionHandler"/> class.
+    /// </summary>
     public GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger)
     {
         _logger = logger;
     }
 
+    /// <summary>
+    /// Attempts to handle an exception and write a problem details response.
+    /// </summary>
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
         _logger.LogError(exception, "Unhandled exception while processing request.");

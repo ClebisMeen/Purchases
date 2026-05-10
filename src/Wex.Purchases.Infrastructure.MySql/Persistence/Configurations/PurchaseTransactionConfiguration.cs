@@ -1,8 +1,14 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace Wex.Purchases.Infrastructure.MySql.Persistence.Configurations;
 
+/// <summary>
+/// Configures the database mapping for <see cref="PurchaseTransaction"/>.
+/// </summary>
 public sealed class PurchaseTransactionConfiguration : IEntityTypeConfiguration<PurchaseTransaction>
 {
+    /// <summary>
+    /// Configures the purchase transaction entity schema.
+    /// </summary>
     public void Configure(EntityTypeBuilder<PurchaseTransaction> builder)
     {
         builder.ToTable("purchase_transactions");

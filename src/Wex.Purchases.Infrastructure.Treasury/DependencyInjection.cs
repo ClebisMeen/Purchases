@@ -3,8 +3,14 @@ using Wex.Purchases.Infrastructure.Treasury.Policies;
 
 namespace Wex.Purchases.Infrastructure.Treasury;
 
+/// <summary>
+/// Registers the Treasury API integration and its resilience policies.
+/// </summary>
 public static class DependencyInjection
 {
+    /// <summary>
+    /// Adds Treasury infrastructure services to the dependency injection container.
+    /// </summary>
     public static IServiceCollection AddTreasuryInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<TreasuryApiOptions>(configuration.GetSection(TreasuryApiOptions.SectionName));

@@ -15,6 +15,9 @@ public sealed class PurchaseServiceCachingDecorator : IPurchaseService
     private readonly IDistributedCache _cache;
     private readonly ILogger<PurchaseServiceCachingDecorator> _logger;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PurchaseServiceCachingDecorator"/> class.
+    /// </summary>
     public PurchaseServiceCachingDecorator(
         IPurchaseService inner,
         IDistributedCache cache,
@@ -25,6 +28,9 @@ public sealed class PurchaseServiceCachingDecorator : IPurchaseService
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
+    /// <summary>
+    /// Delegates purchase creation to the inner service without caching.
+    /// </summary>
     public Task<CreatePurchaseResult> CreateAsync(
         CreatePurchaseRequest request,
         CancellationToken cancellationToken = default)
@@ -32,6 +38,9 @@ public sealed class PurchaseServiceCachingDecorator : IPurchaseService
         return _inner.CreateAsync(request, cancellationToken);
     }
 
+    /// <summary>
+    /// Retrieves a converted purchase from cache when available or from the inner service otherwise.
+    /// </summary>
     public async Task<GetPurchaseConvertedResult?> GetByIdAsync(
         GetPurchaseConvertedRequest request,
         CancellationToken cancellationToken = default)

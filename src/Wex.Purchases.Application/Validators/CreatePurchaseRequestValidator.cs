@@ -1,7 +1,13 @@
 namespace Wex.Purchases.Application.Validators;
 
+/// <summary>
+/// Validates requests used to create purchase transactions.
+/// </summary>
 public sealed class CreatePurchaseRequestValidator : AbstractValidator<CreatePurchaseRequest>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CreatePurchaseRequestValidator"/> class.
+    /// </summary>
     public CreatePurchaseRequestValidator()
     {
         RuleFor(request => request.Description)

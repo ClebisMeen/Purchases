@@ -2,8 +2,14 @@ using Wex.Purchases.Application.Currencies;
 
 namespace Wex.Purchases.Application.Validators;
 
+/// <summary>
+/// Validates requests used to retrieve converted purchase data.
+/// </summary>
 public sealed class GetPurchaseConvertedRequestValidator : AbstractValidator<GetPurchaseConvertedRequest>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetPurchaseConvertedRequestValidator"/> class.
+    /// </summary>
     public GetPurchaseConvertedRequestValidator()
     {
         RuleFor(request => request.PurchaseId)

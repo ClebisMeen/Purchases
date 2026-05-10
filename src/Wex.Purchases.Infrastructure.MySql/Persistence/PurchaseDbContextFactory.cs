@@ -2,8 +2,14 @@ using Microsoft.EntityFrameworkCore.Design;
 
 namespace Wex.Purchases.Infrastructure.MySql.Persistence;
 
+/// <summary>
+/// Creates <see cref="PurchaseDbContext"/> instances for design-time tooling.
+/// </summary>
 public sealed class PurchaseDbContextFactory : IDesignTimeDbContextFactory<PurchaseDbContext>
 {
+    /// <summary>
+    /// Creates a design-time database context instance.
+    /// </summary>
     public PurchaseDbContext CreateDbContext(string[] args)
     {
         var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__PurchaseDb")
