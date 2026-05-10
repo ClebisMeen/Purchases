@@ -28,6 +28,17 @@ dotnet test tests\Wex.Purchases.IntegrationTests\Wex.Purchases.IntegrationTests.
 
 https://fiscaldata.treasury.gov/datasets/treasury-reporting-rates-exchange/treasury-reporting-rates-of-exchange#api-quick-guide
 
+Consulta pública da aplicação:
+
+GET /api/purchases/{id}?countryCode=BR
+
+Country codes aceitos:
+- BR => Brazil-Real
+- CA => Canada-Dollar
+- MX => Mexico-Peso
+
+Filtro interno usado na Treasury API:
+
 https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v1/accounting/od/rates_of_exchange?filter=country_currency_desc:eq:Brazil-Real,record_date:lte:2026-05-09,record_date:gte:2025-11-09&sort=-record_date&page[size]=1
 
 
