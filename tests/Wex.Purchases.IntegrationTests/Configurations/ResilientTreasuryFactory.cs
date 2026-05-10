@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -44,6 +45,7 @@ public sealed class ResilientTreasuryFactory(
             }
 
             services.RemoveAll<ITreasuryApiService>();
+            services.RemoveAll<IDistributedCache>();
 
             var databaseName = Guid.NewGuid().ToString();
 
@@ -51,6 +53,7 @@ public sealed class ResilientTreasuryFactory(
             {
                 options.UseInMemoryDatabase(databaseName);
             });
+            services.AddDistributedMemoryCache();
 
             services.AddSingleton(treasuryHandler);
             services.AddHttpClient("ResilientTreasury", (serviceProvider, client) =>

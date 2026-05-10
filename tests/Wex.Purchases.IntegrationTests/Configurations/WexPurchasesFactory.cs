@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -32,6 +33,7 @@ public sealed class WexPurchasesFactory : WebApplicationFactory<Program>
             }
 
             services.RemoveAll<ITreasuryApiService>();
+            services.RemoveAll<IDistributedCache>();
 
             var databaseName = Guid.NewGuid().ToString();
 
@@ -39,6 +41,7 @@ public sealed class WexPurchasesFactory : WebApplicationFactory<Program>
             {
                 options.UseInMemoryDatabase(databaseName);
             });
+            services.AddDistributedMemoryCache();
             services.AddSingleton<ITreasuryApiService, FakeTreasuryApiService>();
 
             var serviceProvider = services.BuildServiceProvider();
