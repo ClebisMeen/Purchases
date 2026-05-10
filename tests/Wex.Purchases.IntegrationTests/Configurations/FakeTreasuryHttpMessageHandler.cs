@@ -1,5 +1,3 @@
-using System.Net;
-
 namespace Wex.Purchases.IntegrationTests.Configurations;
 
 public sealed class FakeTreasuryHttpMessageHandler : HttpMessageHandler

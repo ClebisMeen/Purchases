@@ -1,11 +1,6 @@
 using System.Text.Json;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Logging;
 using Wex.Purchases.Application.Currencies;
-using Wex.Purchases.Application.Requests;
-using Wex.Purchases.Application.Results;
-using Wex.Purchases.Contracts.Requests;
-using Wex.Purchases.Contracts.Results;
 
 namespace Wex.Purchases.Application.Services;
 /// <summary>
@@ -56,7 +51,7 @@ public sealed class PurchaseServiceCachingDecorator : IPurchaseService
             result = JsonSerializer.Deserialize<GetPurchaseConvertedResult?>(
                 cachedResult,
                 JsonSerializerOptions);
-            
+
             return result is null ? null : result with { From = "cache" };
         }
 

@@ -1,7 +1,4 @@
-using Wex.Purchases.Infrastructure.Treasury.Requests;
 using Wex.Purchases.Infrastructure.Treasury.Results;
-using Wex.Purchases.Infrastructure.Treasury.Services;
-
 namespace Wex.Purchases.IntegrationTests;
 
 public sealed class FakeTreasuryApiService : ITreasuryApiService

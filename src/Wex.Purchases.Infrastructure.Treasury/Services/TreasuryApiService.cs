@@ -1,10 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.Extensions.Options;
-using Wex.Purchases.Infrastructure.Treasury.Options;
-using Wex.Purchases.Infrastructure.Treasury.Requests;
-using Wex.Purchases.Infrastructure.Treasury.Results;
 
 namespace Wex.Purchases.Infrastructure.Treasury.Services;
 
@@ -67,7 +63,7 @@ public sealed class TreasuryApiService(HttpClient httpClient, IOptions<TreasuryA
             item.CountryCurrencyDescription,
             item.ExchangeRate.Value,
             item.RecordDate.Value);
-            
+
         return result;
     }
 
@@ -79,7 +75,7 @@ public sealed class TreasuryApiService(HttpClient httpClient, IOptions<TreasuryA
             $"record_date:lte:{purchaseDate}",  // lte = less than or equal
             $"record_date:gte:{minDate}");      // gte = greater than or equal
 
-    private static string BuildQuery(string filters) => 
+    private static string BuildQuery(string filters) =>
         string.Join("&",
             $"filter={Uri.EscapeDataString(filters)}",
             "sort=-record_date",

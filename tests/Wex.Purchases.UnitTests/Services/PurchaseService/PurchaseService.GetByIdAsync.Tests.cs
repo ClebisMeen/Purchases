@@ -1,12 +1,4 @@
-using Moq;
-using Moq.AutoMock;
-using Wex.Purchases.Application.Requests;
-using Wex.Purchases.Application.Repositories;
-using Wex.Purchases.Application.Services;
-using Wex.Purchases.Domain.Entities;
-using Wex.Purchases.Infrastructure.Treasury.Requests;
 using Wex.Purchases.Infrastructure.Treasury.Results;
-using Wex.Purchases.Infrastructure.Treasury.Services;
 
 namespace Wex.Purchases.UnitTests.Services;
 

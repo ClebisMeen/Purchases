@@ -1,9 +1,3 @@
-using System.Net;
-using System.Net.Http.Json;
-using Wex.Purchases.Contracts.Results;
-using Wex.Purchases.IntegrationTests.Configurations;
-using Wex.Purchases.IntegrationTests.Fixtures;
-
 namespace Wex.Purchases.IntegrationTests;
 
 public sealed class TreasuryHttpResilienceIntegrationTests : IClassFixture<TreasuryApiFixture>

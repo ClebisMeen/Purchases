@@ -1,11 +1,10 @@
 using FluentValidation.AspNetCore;
 using Wex.Purchases.Application.DependencyInjection;
+using Wex.Purchases.Api.ExceptionHandling;
+using Wex.Purchases.Infrastructure.Treasury;
 using Wex.Purchases.Infrastructure.MySql.DependencyInjection;
 using Wex.Purchases.Infrastructure.MySql.Persistence;
 using Microsoft.EntityFrameworkCore;
-using Wex.Purchases.Api.ExceptionHandling;
-using Wex.Purchases.Infrastructure.Treasury;
-using Wex.Purchases.Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

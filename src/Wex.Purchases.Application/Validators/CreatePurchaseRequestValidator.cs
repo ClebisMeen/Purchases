@@ -1,6 +1,3 @@
-using FluentValidation;
-using Wex.Purchases.Contracts.Requests;
-
 namespace Wex.Purchases.Application.Validators;
 
 public sealed class CreatePurchaseRequestValidator : AbstractValidator<CreatePurchaseRequest>

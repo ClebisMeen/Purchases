@@ -1,12 +1,6 @@
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Caching.Distributed;
-using Moq;
-using Moq.AutoMock;
-using Wex.Purchases.Application.Requests;
-using Wex.Purchases.Application.Results;
-using Wex.Purchases.Application.Services;
-using Wex.Purchases.UnitTests.Fixtures;
 
 namespace Wex.Purchases.UnitTests.Services;
 

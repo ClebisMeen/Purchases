@@ -1,5 +1,3 @@
-using Wex.Purchases.Domain.Entities;
-
 namespace Wex.Purchases.UnitTests.Domain.Entities;
 
 public class PurchaseTransactionTests

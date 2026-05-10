@@ -1,6 +1,3 @@
-using Wex.Purchases.Application.Requests;
-using Wex.Purchases.Application.Services;
-
 namespace Wex.Purchases.UnitTests.Services;
 
 public class PurchaseServiceValidateGetPurchaseConvertedRequestTests

@@ -1,13 +1,7 @@
 using System.Runtime.CompilerServices;
-using FluentValidation;
 using Wex.Purchases.Application.Currencies;
 using Wex.Purchases.Application.Repositories;
 using Wex.Purchases.Application.Validators;
-using Wex.Purchases.Application.Requests;
-using Wex.Purchases.Application.Results;
-using Wex.Purchases.Contracts.Requests;
-using Wex.Purchases.Contracts.Results;
-using Wex.Purchases.Domain.Entities;
 using Wex.Purchases.Domain.ValueObjects;
 using Wex.Purchases.Infrastructure.Treasury.Requests;
 using Wex.Purchases.Infrastructure.Treasury.Services;
@@ -27,7 +21,7 @@ public sealed class PurchaseService : IPurchaseService
     }
 
     public async Task<CreatePurchaseResult> CreateAsync(
-        CreatePurchaseRequest request, 
+        CreatePurchaseRequest request,
         CancellationToken cancellationToken = default)
     {
         ValidateRequest(request);

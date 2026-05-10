@@ -1,7 +1,4 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Wex.Purchases.Application.Repositories;
 using Wex.Purchases.Infrastructure.MySql.Persistence;
 using Wex.Purchases.Infrastructure.MySql.Persistence.Repositories;
 

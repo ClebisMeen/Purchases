@@ -1,18 +1,8 @@
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Wex.Purchases.Domain.Entities;
-using Wex.Purchases.Infrastructure.MySql.Persistence;
 using Wex.Purchases.Infrastructure.Treasury.Options;
 using Wex.Purchases.Infrastructure.Treasury.Policies;
-using Wex.Purchases.Infrastructure.Treasury.Services;
-
 namespace Wex.Purchases.IntegrationTests.Configurations;
 
 public sealed class ResilientTreasuryFactory(

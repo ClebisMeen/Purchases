@@ -1,10 +1,5 @@
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Wex.Purchases.Infrastructure.Treasury.Options;
 using Wex.Purchases.Infrastructure.Treasury.Policies;
-using Wex.Purchases.Infrastructure.Treasury.Services;
 
 namespace Wex.Purchases.Infrastructure.Treasury;
 

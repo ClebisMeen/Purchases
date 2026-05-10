@@ -1,10 +1,3 @@
-using Microsoft.AspNetCore.Mvc;
-using Wex.Purchases.Application.Requests;
-using Wex.Purchases.Application.Results;
-using Wex.Purchases.Application.Services;
-using Wex.Purchases.Contracts.Requests;
-using Wex.Purchases.Contracts.Results;
-
 namespace Wex.Purchases.Api.Controllers;
 
 [ApiController]

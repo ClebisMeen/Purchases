@@ -1,5 +1,3 @@
-using Wex.Purchases.Application.Currencies;
-
 namespace Wex.Purchases.UnitTests.Currencies;
 
 public class SupportedCurrencyCatalogTests

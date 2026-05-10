@@ -1,10 +1,3 @@
-using System.Net;
-using System.Net.Http.Json;
-using Microsoft.AspNetCore.Mvc;
-using Wex.Purchases.Application.Results;
-using Wex.Purchases.Contracts.Requests;
-using Wex.Purchases.Contracts.Results;
-
 namespace Wex.Purchases.IntegrationTests;
 
 public sealed class PurchaseControllerIntegrationTests : IClassFixture<WexPurchasesFactory>

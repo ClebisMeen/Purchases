@@ -1,6 +1,5 @@
 using System.Net;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Wex.Purchases.Api.ExceptionHandling;
 

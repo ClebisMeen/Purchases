@@ -1,8 +1,3 @@
-using Wex.Purchases.Application.Requests;
-using Wex.Purchases.Application.Results;
-using Wex.Purchases.Contracts.Requests;
-using Wex.Purchases.Contracts.Results;
-
 namespace Wex.Purchases.UnitTests.Fixtures;
 
 public sealed class PurchaseFixture

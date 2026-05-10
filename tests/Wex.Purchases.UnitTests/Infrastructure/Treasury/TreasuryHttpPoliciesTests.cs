@@ -1,6 +1,5 @@
 using System.Net;
 using Microsoft.Extensions.Logging;
-using Moq;
 using Polly;
 using Polly.Timeout;
 using Wex.Purchases.Infrastructure.Treasury.Policies;

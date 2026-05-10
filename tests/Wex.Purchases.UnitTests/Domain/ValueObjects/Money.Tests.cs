@@ -1,5 +1,3 @@
-using Wex.Purchases.Domain.ValueObjects;
-
 namespace Wex.Purchases.UnitTests.Domain.ValueObjects;
 
 public class MoneyTests

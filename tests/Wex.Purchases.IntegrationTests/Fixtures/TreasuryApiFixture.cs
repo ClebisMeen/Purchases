@@ -1,6 +1,3 @@
-using System.Net;
-using System.Net.Http.Json;
-
 namespace Wex.Purchases.IntegrationTests.Fixtures;
 
 public sealed class TreasuryApiFixture

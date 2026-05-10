@@ -1,6 +1,4 @@
-using FluentValidation;
 using Wex.Purchases.Application.Currencies;
-using Wex.Purchases.Application.Requests;
 
 namespace Wex.Purchases.Application.Validators;
 
