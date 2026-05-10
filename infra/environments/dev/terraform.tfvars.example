@@ -1,0 +1,43 @@
+aws_region = "us-east-1"
+
+vpc_cidr = "10.10.0.0/16"
+
+public_subnet_cidrs = [
+  "10.10.0.0/24",
+  "10.10.1.0/24",
+]
+
+private_app_subnet_cidrs = [
+  "10.10.10.0/24",
+  "10.10.11.0/24",
+]
+
+private_data_subnet_cidrs = [
+  "10.10.20.0/24",
+  "10.10.21.0/24",
+]
+
+allowed_ingress_cidrs = [
+  "0.0.0.0/0",
+]
+
+db_username              = "wex"
+db_instance_class        = "db.t4g.micro"
+db_allocated_storage     = 20
+db_max_allocated_storage = 100
+
+redis_node_type          = "cache.t4g.micro"
+redis_num_cache_clusters = 1
+
+# Use 0 for the first bootstrap apply before the application image exists in ECR.
+ecs_desired_count = 0
+ecs_task_cpu      = 512
+ecs_task_memory   = 1024
+
+ecs_enable_autoscaling       = true
+ecs_autoscaling_min_capacity = 0
+ecs_autoscaling_max_capacity = 2
+
+container_image_tag = "latest"
+
+alarm_actions = []
