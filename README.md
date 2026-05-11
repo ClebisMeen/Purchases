@@ -180,7 +180,7 @@ Create the first local project:
 
 1. Sign in to SonarQube.
 2. Choose to create a local project manually.
-3. Use `wex-purchases` as the project key.
+3. Use `wex-purchases-api` as the project key.
 4. Generate a token for local analysis.
 5. Replace `<TOKEN>` in the commands below with the generated token.
 
@@ -190,7 +190,7 @@ Run the .NET analysis locally:
 docker compose up -d sonarqube sonarqube-db
 dotnet tool install --global dotnet-sonarscanner
 
-dotnet sonarscanner begin /k:"wex-purchases" /d:sonar.host.url="http://localhost:9000" /d:sonar.token="<TOKEN>"
+dotnet sonarscanner begin /k:"wex-purchases-api" /d:sonar.host.url="http://localhost:9000" /d:sonar.token="<TOKEN>"
 
 dotnet build
 
@@ -204,6 +204,8 @@ dotnet build src/Wex.Purchases.slnx
 ```
 
 This setup is local-only. It does not configure GitHub Actions or SonarCloud integration.
+
+Detailed guide: [SonarQube](docs/ci-cd/sonarqube.md).
 
 ## Running Tests
 
@@ -385,6 +387,7 @@ See [Terraform](docs/infra/terraform.md), [ECS Fargate](docs/infra/ecs-fargate.m
 ### CI/CD
 
 - [GitHub Actions](docs/ci-cd/github-actions.md)
+- [SonarQube](docs/ci-cd/sonarqube.md)
 - [Terraform Pipeline](docs/ci-cd/terraform-pipeline.md)
 - [Deployment Flow](docs/ci-cd/deployment-flow.md)
 - [Environments](docs/ci-cd/environments.md)
