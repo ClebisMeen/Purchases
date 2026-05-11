@@ -1,4 +1,4 @@
-name: CI Develop - Mock Deploy
+name: CI Shared - Mock Deploy
 
 on:
   workflow_call:

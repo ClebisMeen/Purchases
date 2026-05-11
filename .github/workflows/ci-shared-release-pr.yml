@@ -1,4 +1,4 @@
-name: CI Develop - Release PR
+name: CI Shared - Release PR
 
 on:
   workflow_call:

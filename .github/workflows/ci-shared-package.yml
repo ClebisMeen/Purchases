@@ -1,4 +1,4 @@
-name: CI Develop - Package
+name: CI Shared - Package
 
 on:
   workflow_call:

@@ -1,4 +1,4 @@
-name: CI Develop - Format
+name: CI Shared - Format
 
 on:
   workflow_call:

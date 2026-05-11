@@ -1,4 +1,4 @@
-name: CI Develop - SonarQube
+name: CI Shared - SonarQube
 
 on:
   workflow_call:

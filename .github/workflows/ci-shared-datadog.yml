@@ -1,4 +1,4 @@
-name: CI Develop - Datadog
+name: CI Shared - Datadog
 
 on:
   workflow_call:

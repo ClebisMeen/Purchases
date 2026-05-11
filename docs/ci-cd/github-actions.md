@@ -9,7 +9,7 @@ The repository contains two CI/CD workflows:
 
 Both workflows build the .NET solution, execute tests, validate formatting, build a Docker image, push it to Amazon ECR, and deploy to Amazon ECS when appropriate.
 
-The develop workflow is an orchestrator. Its job implementations live in `.github/workflows/ci-develop-*.yml` reusable workflows and are invoked through `workflow_call`.
+The branch workflows are orchestrators. Shared job implementations live in `.github/workflows/ci-shared-*.yml` reusable workflows and are invoked through `workflow_call`.
 
 ## Develop Workflow
 

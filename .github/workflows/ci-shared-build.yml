@@ -1,4 +1,4 @@
-name: CI Develop - Build
+name: CI Shared - Build
 
 on:
   workflow_call:

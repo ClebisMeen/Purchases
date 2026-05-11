@@ -14,7 +14,7 @@ Arquivos criados:
 - `.github/workflows/ci-develop.yml`
 - `.github/workflows/ci-main.yml`
 
-O workflow de `develop` atua como orquestrador e chama arquivos reutilizaveis por job no padrao `.github/workflows/ci-develop-*.yml`.
+Os workflows de branch atuam como orquestradores e chamam arquivos reutilizaveis por job no padrao `.github/workflows/ci-shared-*.yml`.
 
 ## Arquitetura dos pipelines
 

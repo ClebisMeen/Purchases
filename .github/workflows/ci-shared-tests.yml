@@ -1,4 +1,4 @@
-name: CI Develop - Tests
+name: CI Shared - Tests
 
 on:
   workflow_call:
