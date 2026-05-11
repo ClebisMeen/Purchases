@@ -44,3 +44,11 @@ override.tf.json
 *_override.tf
 *_override.tf.json
 *.tfvars
+
+# SonarQube
+.sonarqube/
+TestResults/
+coverage/
+*.trx
+*.coverage
+*.coveragexml
