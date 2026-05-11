@@ -306,7 +306,7 @@ The repository contains separate workflows for `develop` and `main`.
 
 The workflows use GitHub OIDC to assume AWS IAM roles without storing long-lived AWS access keys in GitHub.
 
-![Pipeline diagram placeholder](docs/assets/pipeline-placeholder.svg)
+![CI/CD pipeline diagram](docs/assets/pipeline-placeholder.svg)
 
 See [GitHub Actions](docs/ci-cd/github-actions.md), [Deployment Flow](docs/ci-cd/deployment-flow.md), and [Terraform Pipeline](docs/ci-cd/terraform-pipeline.md).
 

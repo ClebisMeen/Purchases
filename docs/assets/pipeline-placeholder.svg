@@ -1,8 +1,117 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="500" viewBox="0 0 1200 500" role="img" aria-labelledby="title desc">
-  <title id="title">Pipeline diagram placeholder</title>
-  <desc id="desc">Placeholder for the Wex Purchases API CI/CD pipeline diagram.</desc>
-  <rect width="1200" height="500" fill="#f8fafc"/>
-  <rect x="40" y="40" width="1120" height="420" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
-  <text x="600" y="220" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" fill="#0f172a">Pipeline Diagram Placeholder</text>
-  <text x="600" y="270" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="#475569">Build, Test, Format, Docker, ECR, ECS Deploy, Health Check</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620" role="img" aria-labelledby="title desc">
+  <title id="title">Wex Purchases API CI/CD pipeline</title>
+  <desc id="desc">Diagram showing the GitHub Actions pipeline for develop and main branches: trigger, parallel build, tests and format jobs, Docker image packaging to Amazon ECR, SonarQube analysis, mock ECS deployment, Datadog monitoring, and develop release pull request creation.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f8fafc; }
+      .panel { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.5; }
+      .group { fill: #f1f5f9; stroke: #cbd5e1; stroke-width: 1.2; }
+      .trigger { fill: #eef2ff; stroke: #6366f1; }
+      .ci { fill: #ecfeff; stroke: #0891b2; }
+      .package { fill: #fff7ed; stroke: #ea580c; }
+      .deploy { fill: #f0fdf4; stroke: #16a34a; }
+      .quality { fill: #fdf4ff; stroke: #c026d3; }
+      .release { fill: #fefce8; stroke: #ca8a04; }
+      .text { font-family: Arial, sans-serif; fill: #0f172a; }
+      .muted { font-family: Arial, sans-serif; fill: #475569; }
+      .small { font-size: 13px; }
+      .label { font-size: 15px; font-weight: 700; }
+      .title { font-size: 28px; font-weight: 700; }
+      .subtitle { font-size: 15px; }
+      .node { stroke-width: 2; rx: 10; ry: 10; }
+      .arrow { fill: none; stroke: #334155; stroke-width: 2.2; marker-end: url(#arrowhead); }
+      .dashed { stroke-dasharray: 7 6; }
+    </style>
+    <marker id="arrowhead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" width="1200" height="620"/>
+  <rect class="panel" x="24" y="24" width="1152" height="572" rx="18"/>
+
+  <text class="text title" x="60" y="66">Wex Purchases API CI/CD Pipeline</text>
+  <text class="muted subtitle" x="60" y="92">Generated from .github/workflows: develop and main share CI, package Docker images to ECR on push, then run quality and deployment stages.</text>
+
+  <rect class="group" x="50" y="128" width="220" height="388" rx="14"/>
+  <text class="muted label" x="74" y="158">Triggers</text>
+
+  <rect class="node trigger" x="76" y="186" width="168" height="80"/>
+  <text class="text label" x="160" y="218" text-anchor="middle">develop</text>
+  <text class="muted small" x="160" y="242" text-anchor="middle">push or pull_request</text>
+
+  <rect class="node trigger" x="76" y="310" width="168" height="80"/>
+  <text class="text label" x="160" y="342" text-anchor="middle">main</text>
+  <text class="muted small" x="160" y="366" text-anchor="middle">push or pull_request</text>
+
+  <rect class="node trigger" x="76" y="434" width="168" height="54"/>
+  <text class="text label" x="160" y="466" text-anchor="middle">GitHub Actions</text>
+
+  <rect class="group" x="320" y="128" width="292" height="388" rx="14"/>
+  <text class="muted label" x="344" y="158">Parallel CI jobs</text>
+
+  <rect class="node ci" x="350" y="186" width="232" height="72"/>
+  <text class="text label" x="466" y="216" text-anchor="middle">Restore and Build</text>
+  <text class="muted small" x="466" y="239" text-anchor="middle">dotnet restore + build /warnaserror</text>
+
+  <rect class="node ci" x="350" y="296" width="232" height="86"/>
+  <text class="text label" x="466" y="326" text-anchor="middle">Tests Matrix</text>
+  <text class="muted small" x="466" y="350" text-anchor="middle">Unit + Integration</text>
+  <text class="muted small" x="466" y="371" text-anchor="middle">TRX artifacts uploaded</text>
+
+  <rect class="node ci" x="350" y="420" width="232" height="72"/>
+  <text class="text label" x="466" y="450" text-anchor="middle">Formatting</text>
+  <text class="muted small" x="466" y="473" text-anchor="middle">dotnet format verify-no-changes</text>
+
+  <rect class="group" x="662" y="128" width="220" height="388" rx="14"/>
+  <text class="muted label" x="686" y="158">Package</text>
+
+  <rect class="node package" x="692" y="230" width="160" height="100"/>
+  <text class="text label" x="772" y="261" text-anchor="middle">Buildx Image</text>
+  <text class="muted small" x="772" y="285" text-anchor="middle">AWS OIDC auth</text>
+  <text class="muted small" x="772" y="306" text-anchor="middle">push to Amazon ECR</text>
+
+  <rect class="node package" x="692" y="374" width="160" height="76"/>
+  <text class="text label" x="772" y="405" text-anchor="middle">Tags</text>
+  <text class="muted small" x="772" y="429" text-anchor="middle">latest/develop-latest + SHA</text>
+
+  <rect class="group" x="932" y="128" width="220" height="388" rx="14"/>
+  <text class="muted label" x="956" y="158">Post-package stages</text>
+
+  <rect class="node quality" x="962" y="178" width="160" height="70"/>
+  <text class="text label" x="1042" y="207" text-anchor="middle">SonarQube</text>
+  <text class="muted small" x="1042" y="230" text-anchor="middle">analysis stage prepared</text>
+
+  <rect class="node deploy" x="962" y="282" width="160" height="82"/>
+  <text class="text label" x="1042" y="311" text-anchor="middle">Mock ECS Deploy</text>
+  <text class="muted small" x="1042" y="334" text-anchor="middle">Terraform-managed infra</text>
+  <text class="muted small" x="1042" y="353" text-anchor="middle">no cloud changes</text>
+
+  <rect class="node deploy" x="962" y="398" width="160" height="62"/>
+  <text class="text label" x="1042" y="426" text-anchor="middle">Datadog</text>
+  <text class="muted small" x="1042" y="448" text-anchor="middle">monitoring setup</text>
+
+  <rect class="node release" x="962" y="494" width="160" height="62"/>
+  <text class="text label" x="1042" y="522" text-anchor="middle">Release PR</text>
+  <text class="muted small" x="1042" y="544" text-anchor="middle">develop push only</text>
+
+  <path class="arrow" d="M 244 226 H 350"/>
+  <path class="arrow" d="M 244 350 H 350"/>
+  <path class="arrow" d="M 244 461 H 292 C 310 461 310 456 350 456"/>
+
+  <path class="arrow" d="M 582 222 H 636 C 654 222 654 280 692 280"/>
+  <path class="arrow" d="M 582 339 H 636 C 654 339 654 280 692 280"/>
+  <path class="arrow" d="M 582 456 H 636 C 654 456 654 280 692 280"/>
+
+  <path class="arrow" d="M 772 330 V 374"/>
+  <path class="arrow" d="M 852 280 H 908 C 932 280 932 213 962 213"/>
+  <path class="arrow" d="M 852 280 H 930 C 946 280 946 323 962 323"/>
+  <path class="arrow" d="M 1042 364 V 398"/>
+  <path class="arrow dashed" d="M 852 412 H 914 C 940 412 940 525 962 525"/>
+
+  <rect x="666" y="178" width="214" height="30" rx="15" fill="#ffffff" stroke="#fb923c"/>
+  <text class="muted small" x="773" y="198" text-anchor="middle">Runs only on push to develop/main</text>
+
+  <rect x="58" y="540" width="520" height="34" rx="17" fill="#ffffff" stroke="#cbd5e1"/>
+  <text class="muted small" x="318" y="562" text-anchor="middle">Pull requests stop after CI jobs. Packaging, deployment, monitoring, and release PR run only after branch push conditions are met.</text>
 </svg>
