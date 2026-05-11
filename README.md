@@ -326,7 +326,7 @@ flowchart TB
     Secrets[Secrets Manager] --> ECS
 ```
 
-![Terraform diagram placeholder](docs/assets/terraform-placeholder.svg)
+![Terraform infrastructure diagram](docs/assets/terraform-placeholder.svg)
 
 See [Terraform](docs/infra/terraform.md), [ECS Fargate](docs/infra/ecs-fargate.md), [Networking](docs/infra/networking.md), and [Observability](docs/infra/observability.md).
 
