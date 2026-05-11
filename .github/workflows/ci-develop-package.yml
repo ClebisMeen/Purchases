@@ -3,9 +3,6 @@ name: CI Develop - Package
 on:
   workflow_call:
     inputs:
-      aws_region:
-        required: true
-        type: string
       build_context:
         required: true
         type: string
@@ -33,15 +30,16 @@ permissions:
 
 jobs:
   package:
-    name: Build and Push Development Image
+    name: Build and Push ${{ inputs.environment_name }} Image
     runs-on: ubuntu-latest
     timeout-minutes: 25
     environment:
       name: ${{ inputs.environment_name }}
     env:
-      AWS_REGION: ${{ inputs.aws_region }}
+      AWS_REGION: ${{ vars.AWS_REGION }}
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
       ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+      ENVIRONMENT_NAME: ${{ inputs.environment_name }}
     outputs:
       image_uri: ${{ steps.image.outputs.image_uri }}
 
@@ -62,7 +60,7 @@ jobs:
 
           for name in AWS_REGION AWS_ACCOUNT_ID ECR_REPOSITORY AWS_ROLE_TO_ASSUME; do
             if [ -z "${!name}" ]; then
-              echo "::error::${name} is not configured for the development package job."
+              echo "::error::${name} is not configured for the ${{ inputs.environment_name }} package job."
               missing=1
             fi
           done
@@ -76,7 +74,7 @@ jobs:
         with:
           aws-region: ${{ env.AWS_REGION }}
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          role-session-name: github-actions-develop-package
+          role-session-name: github-actions-${{ inputs.environment_name }}-package
 
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
@@ -84,8 +82,23 @@ jobs:
       - name: Generate image tags
         id: image
         run: |
-          IMAGE_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:develop-${GITHUB_SHA}"
-          IMAGE_LATEST="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:develop-latest"
+          case "$ENVIRONMENT_NAME" in
+            production)
+              TAG_PREFIX="prod"
+              LATEST_TAG="latest"
+              ;;
+            development)
+              TAG_PREFIX="develop"
+              LATEST_TAG="develop-latest"
+              ;;
+            *)
+              TAG_PREFIX="$(echo "$ENVIRONMENT_NAME" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9._-' '-')"
+              LATEST_TAG="${TAG_PREFIX}-latest"
+              ;;
+          esac
+
+          IMAGE_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${TAG_PREFIX}-${GITHUB_SHA}"
+          IMAGE_LATEST="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${LATEST_TAG}"
 
           echo "image_uri=${IMAGE_URI}" >> "$GITHUB_OUTPUT"
           {

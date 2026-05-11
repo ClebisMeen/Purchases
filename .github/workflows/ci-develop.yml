@@ -65,7 +65,6 @@ jobs:
       id-token: write
     uses: ./.github/workflows/ci-develop-package.yml
     with:
-      aws_region: ${{ vars.AWS_REGION }}
       build_context: .
       dockerfile_path: ./Dockerfile
       environment_name: development
@@ -100,8 +99,6 @@ jobs:
       cancel-in-progress: false
     uses: ./.github/workflows/ci-develop-mock-deploy.yml
     with:
-      ecs_cluster: ${{ vars.ECS_CLUSTER_DEVELOP }}
-      ecs_service: ${{ vars.ECS_SERVICE_DEVELOP }}
       environment_name: development
       image_uri: ${{ needs.package.outputs.image_uri }}
 

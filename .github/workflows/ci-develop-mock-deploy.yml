@@ -21,7 +21,7 @@ permissions:
 
 jobs:
   deploy:
-    name: Mock Deploy to ECS Development
+    name: Mock Deploy to ECS ${{ inputs.environment_name }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment:
@@ -32,19 +32,21 @@ jobs:
         env:
           ECS_CLUSTER: ${{ inputs.ecs_cluster }}
           ECS_SERVICE: ${{ inputs.ecs_service }}
+          ENVIRONMENT_NAME: ${{ inputs.environment_name }}
           IMAGE_URI: ${{ inputs.image_uri }}
         run: |
-          mkdir -p artifacts/deploy/development
+          ARTIFACT_DIR="artifacts/deploy/${ENVIRONMENT_NAME}"
+          mkdir -p "$ARTIFACT_DIR"
 
-          cat > artifacts/deploy/development/mock-deploy-plan.json <<EOF
+          cat > "$ARTIFACT_DIR/mock-deploy-plan.json" <<EOF
           {
-            "environment": "development",
+            "environment": "${ENVIRONMENT_NAME}",
             "provider": "aws",
             "target": "ecs-fargate",
             "deployment_mode": "terraform_managed",
             "execution_mode": "mock",
-            "cluster": "${ECS_CLUSTER:-wex-purchases-development-cluster}",
-            "service": "${ECS_SERVICE:-wex-purchases-api-development-service}",
+            "cluster": "${ECS_CLUSTER:-wex-purchases-${ENVIRONMENT_NAME}-cluster}",
+            "service": "${ECS_SERVICE:-wex-purchases-api-${ENVIRONMENT_NAME}-service}",
             "image": "${IMAGE_URI}",
             "status": "deployment_not_executed"
           }
@@ -69,14 +71,16 @@ jobs:
 
       - name: Collect mock deployment summary
         if: always()
+        env:
+          ENVIRONMENT_NAME: ${{ inputs.environment_name }}
         run: |
           {
-            echo "## Development deploy summary"
+            echo "## ${ENVIRONMENT_NAME} deploy summary"
             echo ""
             echo "- Deployment mode: \`Mock\`"
             echo "- Infrastructure manager: \`Terraform\`"
             echo "- Target platform: \`AWS ECS Fargate\`"
-            echo "- Environment: \`development\`"
+            echo "- Environment: \`${ENVIRONMENT_NAME}\`"
             echo "- Image: \`${{ inputs.image_uri }}\`"
             echo "- AWS execution: \`disabled\`"
             echo "- Result: \`deployment flow validated without creating cloud resources\`"
@@ -91,7 +95,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: mock-deploy-development-artifacts
-          path: artifacts/deploy/development
+          name: mock-deploy-${{ inputs.environment_name }}-artifacts
+          path: artifacts/deploy/${{ inputs.environment_name }}
           if-no-files-found: error
           retention-days: 14
