@@ -12,6 +12,7 @@ This repository was built for the Wex technical challenge and demonstrates Clean
 - [Architecture](#architecture)
 - [Local Setup](#local-setup)
 - [Running With Docker Compose](#running-with-docker-compose)
+- [Local Code Quality With SonarQube](#local-code-quality-with-sonarqube)
 - [Running Tests](#running-tests)
 - [API Reference](#api-reference)
 - [CI/CD](#cicd)
@@ -124,7 +125,7 @@ Detailed guide: [Local Development](docs/setup/local-development.md).
 
 ## Running With Docker Compose
 
-Docker Compose starts the API, MySQL, and Redis:
+Docker Compose starts the API, MySQL, Redis, and the local SonarQube stack:
 
 ```bash
 docker compose up --build
@@ -139,10 +140,70 @@ Default service URLs:
 | Swagger UI | `http://localhost:8080/swagger` |
 | MySQL | `localhost:3306` |
 | Redis | `localhost:6379` |
+| SonarQube | `http://localhost:9000` |
 
 The API applies EF Core migrations automatically during startup when not running in the `Testing` environment.
 
 Detailed guide: [Docker Compose](docs/setup/docker-compose.md).
+
+## Local Code Quality With SonarQube
+
+The Docker Compose file includes a local SonarQube Community Edition service and a dedicated PostgreSQL database used only by SonarQube.
+
+Start only SonarQube and its PostgreSQL database:
+
+```bash
+docker compose up -d sonarqube sonarqube-db
+```
+
+Or start the full local environment, including the API, MySQL, Redis, SonarQube, and PostgreSQL:
+
+```bash
+docker compose up --build
+```
+
+Open SonarQube:
+
+```text
+http://localhost:9000
+```
+
+Default login:
+
+```text
+admin / admin
+```
+
+On the first login, SonarQube may ask you to change the default password.
+
+Create the first local project:
+
+1. Sign in to SonarQube.
+2. Choose to create a local project manually.
+3. Use `wex-purchases` as the project key.
+4. Generate a token for local analysis.
+5. Replace `<TOKEN>` in the commands below with the generated token.
+
+Run the .NET analysis locally:
+
+```bash
+docker compose up -d sonarqube sonarqube-db
+dotnet tool install --global dotnet-sonarscanner
+
+dotnet sonarscanner begin /k:"wex-purchases" /d:sonar.host.url="http://localhost:9000" /d:sonar.token="<TOKEN>"
+
+dotnet build
+
+dotnet sonarscanner end /d:sonar.token="<TOKEN>"
+```
+
+If running from the repository root and `dotnet build` does not infer the solution, build the solution explicitly:
+
+```bash
+dotnet build src/Wex.Purchases.slnx
+```
+
+This setup is local-only. It does not configure GitHub Actions or SonarCloud integration.
 
 ## Running Tests
 
