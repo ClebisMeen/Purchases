@@ -4,75 +4,30 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
-
-env:
-  DOTNET_VERSION: 10.0.x
-  SOLUTION_PATH: src/Wex.Purchases.slnx
-  UNIT_TEST_PROJECT_PATH: tests/Wex.Purchases.UnitTests/Wex.Purchases.UnitTests.csproj
-  INTEGRATION_TEST_PROJECT_PATH: tests/Wex.Purchases.IntegrationTests/Wex.Purchases.IntegrationTests.csproj
-  DOCKERFILE_PATH: ./Dockerfile
-  BUILD_CONTEXT: .
-  AWS_REGION: ${{ vars.AWS_REGION }}
-  AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-  ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
-  ECS_CLUSTER: ${{ vars.ECS_CLUSTER_PRODUCTION }}
-  ECS_SERVICE: ${{ vars.ECS_SERVICE_PRODUCTION }}
-  ECS_TASK_DEFINITION: ${{ vars.ECS_TASK_DEFINITION_PRODUCTION }}
-  ECS_CONTAINER_NAME: ${{ vars.ECS_CONTAINER_NAME }}
-  MINIMUM_COVERAGE: ${{ vars.MINIMUM_COVERAGE }}
 
 jobs:
   build:
-    name: Restore and Build Release
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-
-    steps:
-      - name: Checkout source code
-        uses: actions/checkout@v4
-
-      - name: Setup .NET SDK with NuGet cache
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-          cache: true
-          cache-dependency-path: |
-            src/Wex.Purchases.slnx
-            src/**/*.csproj
-            tests/**/*.csproj
-
-      - name: Restore application dependencies
-        run: dotnet restore $SOLUTION_PATH --nologo
-
-      - name: Restore unit test dependencies
-        run: dotnet restore $UNIT_TEST_PROJECT_PATH --nologo
-
-      - name: Restore integration test dependencies
-        run: dotnet restore $INTEGRATION_TEST_PROJECT_PATH --nologo
-
-      - name: Build release binaries with warnings as errors
-        run: dotnet build $SOLUTION_PATH -c Release --no-restore /warnaserror --nologo
-
-      - name: Build unit tests with warnings as errors
-        run: dotnet build $UNIT_TEST_PROJECT_PATH -c Release --no-restore /warnaserror --nologo
-
-      - name: Build integration tests with warnings as errors
-        run: dotnet build $INTEGRATION_TEST_PROJECT_PATH -c Release --no-restore /warnaserror --nologo
+    name: Restore and Build
+    uses: ./.github/workflows/ci-develop-build.yml
+    with:
+      dotnet_version: 10.0.x
+      solution_path: src/Wex.Purchases.slnx
+      unit_test_project_path: tests/Wex.Purchases.UnitTests/Wex.Purchases.UnitTests.csproj
+      integration_test_project_path: tests/Wex.Purchases.IntegrationTests/Wex.Purchases.IntegrationTests.csproj
 
   tests:
     name: Test - ${{ matrix.suite.name }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    needs:
-      - build
-
+    uses: ./.github/workflows/ci-develop-tests.yml
     strategy:
       fail-fast: true
       matrix:
@@ -83,383 +38,63 @@ jobs:
           - name: Integration
             id: integration
             project: tests/Wex.Purchases.IntegrationTests/Wex.Purchases.IntegrationTests.csproj
-
-    steps:
-      - name: Checkout source code
-        uses: actions/checkout@v4
-
-      - name: Setup .NET SDK with NuGet cache
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-          cache: true
-          cache-dependency-path: |
-            src/Wex.Purchases.slnx
-            src/**/*.csproj
-            tests/**/*.csproj
-
-      - name: Restore dependencies for test suite
-        run: dotnet restore ${{ matrix.suite.project }} --nologo
-
-      - name: Execute ${{ matrix.suite.name }} tests with coverage
-        run: |
-          mkdir -p artifacts/test-results/${{ matrix.suite.id }}
-          dotnet test ${{ matrix.suite.project }} \
-            -c Release \
-            --no-restore \
-            --collect:"XPlat Code Coverage" \
-            --logger "trx;LogFileName=${{ matrix.suite.id }}-tests.trx" \
-            --results-directory artifacts/test-results/${{ matrix.suite.id }} \
-            --nologo
-
-      - name: Upload ${{ matrix.suite.name }} test artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-${{ matrix.suite.id }}
-          path: artifacts/test-results/${{ matrix.suite.id }}
-          if-no-files-found: error
-          retention-days: 30
-
-  coverage:
-    name: Coverage Gate
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs:
-      - tests
-
-    steps:
-      - name: Download test artifacts
-        uses: actions/download-artifact@v4
-        with:
-          pattern: test-results-*
-          path: artifacts/test-results
-          merge-multiple: true
-
-      - name: Validate minimum coverage
-        run: |
-          python3 <<'PY'
-          import glob
-          import os
-          import sys
-          import xml.etree.ElementTree as ET
-
-          files = glob.glob("artifacts/test-results/**/coverage.cobertura.xml", recursive=True)
-          if not files:
-              print("No coverage files were found.", file=sys.stderr)
-              sys.exit(1)
-
-          lines_covered = 0
-          lines_valid = 0
-
-          for file_name in files:
-              root = ET.parse(file_name).getroot()
-              lines_covered += int(root.attrib.get("lines-covered", 0))
-              lines_valid += int(root.attrib.get("lines-valid", 0))
-
-          coverage = (lines_covered / lines_valid * 100) if lines_valid else 0.0
-          threshold = float(os.environ.get("MINIMUM_COVERAGE") or "80")
-
-          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
-              summary.write("## Coverage summary\n\n")
-              summary.write(f"- Lines covered: {lines_covered}\n")
-              summary.write(f"- Lines valid: {lines_valid}\n")
-              summary.write(f"- Coverage: {coverage:.2f}%\n")
-              summary.write(f"- Required minimum: {threshold:.2f}%\n")
-
-          if coverage < threshold:
-              print(
-                  f"Coverage gate failed: {coverage:.2f}% is below the required {threshold:.2f}%",
-                  file=sys.stderr,
-              )
-              sys.exit(1)
-          PY
+    with:
+      dotnet_version: 10.0.x
+      suite_name: ${{ matrix.suite.name }}
+      suite_id: ${{ matrix.suite.id }}
+      project_path: ${{ matrix.suite.project }}
 
   format:
     name: Formatting and Code Style
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    needs:
-      - build
-
-    steps:
-      - name: Checkout source code
-        uses: actions/checkout@v4
-
-      - name: Setup .NET SDK with NuGet cache
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-          cache: true
-          cache-dependency-path: |
-            src/Wex.Purchases.slnx
-            src/**/*.csproj
-            tests/**/*.csproj
-
-      - name: Restore dependencies for formatting validation
-        run: |
-          dotnet restore $SOLUTION_PATH --nologo
-          dotnet restore $UNIT_TEST_PROJECT_PATH --nologo
-          dotnet restore $INTEGRATION_TEST_PROJECT_PATH --nologo
-
-      - name: Validate formatting for solution
-        run: dotnet format $SOLUTION_PATH --verify-no-changes --no-restore --verbosity diagnostic
-
-      - name: Validate formatting for unit tests
-        run: dotnet format $UNIT_TEST_PROJECT_PATH --verify-no-changes --no-restore --verbosity diagnostic
-
-      - name: Validate formatting for integration tests
-        run: dotnet format $INTEGRATION_TEST_PROJECT_PATH --verify-no-changes --no-restore --verbosity diagnostic
+    uses: ./.github/workflows/ci-develop-format.yml
+    with:
+      dotnet_version: 10.0.x
+      solution_path: src/Wex.Purchases.slnx
+      unit_test_project_path: tests/Wex.Purchases.UnitTests/Wex.Purchases.UnitTests.csproj
+      integration_test_project_path: tests/Wex.Purchases.IntegrationTests/Wex.Purchases.IntegrationTests.csproj
 
   package:
     name: Build and Push Production Image
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs:
       - build
       - tests
-      - coverage
       - format
     permissions:
       contents: read
       id-token: write
-    outputs:
-      image_uri: ${{ steps.image.outputs.image_uri }}
+    uses: ./.github/workflows/ci-develop-package.yml
+    with:
+      build_context: .
+      dockerfile_path: ./Dockerfile
+      environment_name: production
+    secrets:
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+      ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+      AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME_PRODUCTION }}
 
-    steps:
-      - name: Checkout source code
-        uses: actions/checkout@v4
-
-      - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Configure AWS credentials via OIDC
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: ${{ env.AWS_REGION }}
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME_PRODUCTION }}
-          role-session-name: github-actions-production-package
-
-      - name: Login to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Generate image tags
-        id: image
-        run: |
-          IMAGE_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:prod-${GITHUB_SHA}"
-          IMAGE_LATEST="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:latest"
-
-          echo "image_uri=${IMAGE_URI}" >> "$GITHUB_OUTPUT"
-          {
-            echo "tags<<EOF"
-            echo "${IMAGE_LATEST}"
-            echo "${IMAGE_URI}"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v6
-        with:
-          context: ${{ env.BUILD_CONTEXT }}
-          file: ${{ env.DOCKERFILE_PATH }}
-          push: true
-          provenance: false
-          build-args: |
-            BUILD_CONFIGURATION=Release
-          tags: ${{ steps.image.outputs.tags }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-  deploy:
-    name: Deploy to ECS Production
-    runs-on: ubuntu-latest
-    timeout-minutes: 35
+  sonarqube-analysis:
+    name: SonarQube Analysis
     needs:
       - package
-    environment:
-      name: production
-    permissions:
-      contents: read
-      id-token: write
+    uses: ./.github/workflows/ci-develop-sonarqube.yml
+
+  deploy:
+    name: Mock Deploy to ECS Production
+    needs:
+      - package
     concurrency:
       group: deploy-production
       cancel-in-progress: false
+    uses: ./.github/workflows/ci-develop-mock-deploy.yml
+    with:
+      ecs_cluster: ${{ vars.ECS_CLUSTER_PRODUCTION }}
+      ecs_service: ${{ vars.ECS_SERVICE_PRODUCTION }}
+      environment_name: production
+      image_uri: ${{ needs.package.outputs.image_uri }}
 
-    steps:
-      - name: Configure AWS credentials via OIDC
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: ${{ env.AWS_REGION }}
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME_PRODUCTION }}
-          role-session-name: github-actions-production-deploy
-
-      - name: Capture current ECS service state
-        id: current
-        run: |
-          mkdir -p artifacts/deploy/production
-          aws ecs describe-services \
-            --cluster "$ECS_CLUSTER" \
-            --services "$ECS_SERVICE" \
-            > artifacts/deploy/production/service-before.json
-
-          CURRENT_TASK_DEFINITION=$(jq -r '.services[0].taskDefinition' artifacts/deploy/production/service-before.json)
-          echo "current_task_definition=${CURRENT_TASK_DEFINITION}" >> "$GITHUB_OUTPUT"
-
-      - name: Register a new task definition revision
-        id: taskdef
-        run: |
-          aws ecs describe-task-definition \
-            --task-definition "$ECS_TASK_DEFINITION" \
-            --query taskDefinition \
-            > artifacts/deploy/production/task-definition-source.json
-
-          CONTAINER_NAME="${ECS_CONTAINER_NAME:-$(jq -r '.containerDefinitions[0].name' artifacts/deploy/production/task-definition-source.json)}"
-          IMAGE_URI="${{ needs.package.outputs.image_uri }}"
-
-          jq \
-            --arg image "$IMAGE_URI" \
-            --arg container "$CONTAINER_NAME" \
-            '
-              del(
-                .taskDefinitionArn,
-                .revision,
-                .status,
-                .requiresAttributes,
-                .compatibilities,
-                .registeredAt,
-                .registeredBy,
-                .deregisteredAt
-              )
-              | .containerDefinitions |= map(
-                  if .name == $container then
-                    .image = $image
-                  else
-                    .
-                  end
-                )
-            ' \
-            artifacts/deploy/production/task-definition-source.json \
-            > artifacts/deploy/production/task-definition-rendered.json
-
-          NEW_TASK_DEFINITION=$(aws ecs register-task-definition \
-            --cli-input-json file://artifacts/deploy/production/task-definition-rendered.json \
-            --query 'taskDefinition.taskDefinitionArn' \
-            --output text)
-
-          echo "new_task_definition=${NEW_TASK_DEFINITION}" >> "$GITHUB_OUTPUT"
-
-      - name: Update ECS service and wait for stability
-        run: |
-          for attempt in 1 2 3; do
-            echo "Deployment attempt ${attempt} of 3"
-
-            aws ecs update-service \
-              --cluster "$ECS_CLUSTER" \
-              --service "$ECS_SERVICE" \
-              --task-definition "${{ steps.taskdef.outputs.new_task_definition }}" \
-              --force-new-deployment
-
-            if aws ecs wait services-stable --cluster "$ECS_CLUSTER" --services "$ECS_SERVICE"; then
-              exit 0
-            fi
-
-            if [ "$attempt" -eq 3 ]; then
-              echo "ECS service did not stabilize after 3 attempts." >&2
-              exit 1
-            fi
-
-            sleep 20
-          done
-
-      - name: Run production health check
-        id: healthcheck
-        continue-on-error: true
-        env:
-          HEALTHCHECK_URL: ${{ secrets.APP_HEALTHCHECK_URL }}
-        run: |
-          if [ -z "$HEALTHCHECK_URL" ]; then
-            echo "APP_HEALTHCHECK_URL secret is not configured." >&2
-            exit 1
-          fi
-
-          for attempt in 1 2 3 4 5 6 7 8; do
-            HTTP_STATUS=$(curl --silent --show-error --location --max-time 15 \
-              --output /tmp/healthcheck-response.txt \
-              --write-out "%{http_code}" \
-              "$HEALTHCHECK_URL")
-
-            if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 300 ]; then
-              {
-                echo "## Production health check"
-                echo ""
-                echo "- Endpoint: configured production health check"
-                echo "- Result: healthy"
-                echo "- HTTP status: \`$HTTP_STATUS\`"
-              } >> "$GITHUB_STEP_SUMMARY"
-              exit 0
-            fi
-
-            if [ "$attempt" -eq 8 ]; then
-              echo "Health check failed after 8 attempts. Last status: $HTTP_STATUS" >&2
-              cat /tmp/healthcheck-response.txt >&2 || true
-              exit 1
-            fi
-
-            sleep 15
-          done
-
-      - name: Roll back to previous task definition
-        if: steps.healthcheck.outcome == 'failure'
-        run: |
-          echo "Rolling back to ${{ steps.current.outputs.current_task_definition }}"
-
-          aws ecs update-service \
-            --cluster "$ECS_CLUSTER" \
-            --service "$ECS_SERVICE" \
-            --task-definition "${{ steps.current.outputs.current_task_definition }}" \
-            --force-new-deployment
-
-          aws ecs wait services-stable --cluster "$ECS_CLUSTER" --services "$ECS_SERVICE"
-
-          {
-            echo "## Automatic rollback"
-            echo ""
-            echo "- Rolled back to: \`${{ steps.current.outputs.current_task_definition }}\`"
-            echo "- Reason: post-deploy health check failure"
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Mark deployment as failed after rollback
-        if: steps.healthcheck.outcome == 'failure'
-        run: |
-          echo "Deployment rolled back because the production health check failed." >&2
-          exit 1
-
-      - name: Collect deployment summary
-        if: always()
-        run: |
-          aws ecs describe-services \
-            --cluster "$ECS_CLUSTER" \
-            --services "$ECS_SERVICE" \
-            > artifacts/deploy/production/service-after.json
-
-          {
-            echo "## Production deploy summary"
-            echo ""
-            echo "- Cluster: \`$ECS_CLUSTER\`"
-            echo "- Service: \`$ECS_SERVICE\`"
-            echo "- Previous task definition: \`${{ steps.current.outputs.current_task_definition }}\`"
-            echo "- Target task definition: \`${{ steps.taskdef.outputs.new_task_definition }}\`"
-            echo "- Image: \`${{ needs.package.outputs.image_uri }}\`"
-            echo ""
-            echo "### Recent ECS events"
-            jq -r '.services[0].events[:10][] | "- \(.createdAt): \(.message)"' artifacts/deploy/production/service-after.json
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Upload deployment artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: deploy-production-artifacts
-          path: artifacts/deploy/production
-          if-no-files-found: error
-          retention-days: 30
+  datadog-monitoring:
+    name: Datadog Monitoring Setup
+    needs:
+      - deploy
+    uses: ./.github/workflows/ci-develop-datadog.yml
