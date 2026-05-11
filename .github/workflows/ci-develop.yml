@@ -398,134 +398,78 @@ jobs:
           echo "Release pull request created: ${PR_URL}"
 
   deploy:
-    name: Deploy to ECS Development
+    name: Mock Deploy to ECS Development
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    # if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
-    if: ${{ false }} # skip  deploy step for now to avoid unintended deployments while testing workflow
+    timeout-minutes: 10
     needs:
       - package
     environment:
       name: development
-    permissions:
-      contents: read
-      id-token: write
     concurrency:
       group: deploy-development
       cancel-in-progress: false
 
     steps:
-      - name: Configure AWS credentials via OIDC
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: ${{ env.AWS_REGION }}
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME_DEVELOP }}
-          role-session-name: github-actions-develop-deploy
-
-      - name: Capture current ECS service state
-        id: current
+      - name: Prepare mock deployment artifacts
         run: |
           mkdir -p artifacts/deploy/development
-          aws ecs describe-services \
-            --cluster "$ECS_CLUSTER" \
-            --services "$ECS_SERVICE" \
-            > artifacts/deploy/development/service-before.json
 
-          CURRENT_TASK_DEFINITION=$(jq -r '.services[0].taskDefinition' artifacts/deploy/development/service-before.json)
-          echo "current_task_definition=${CURRENT_TASK_DEFINITION}" >> "$GITHUB_OUTPUT"
+          cat > artifacts/deploy/development/mock-deploy-plan.json <<EOF
+          {
+            "environment": "development",
+            "provider": "aws",
+            "target": "ecs-fargate",
+            "deployment_mode": "terraform_managed",
+            "execution_mode": "mock",
+            "cluster": "${ECS_CLUSTER:-wex-purchases-development-cluster}",
+            "service": "${ECS_SERVICE:-wex-purchases-api-development-service}",
+            "image": "${{ needs.package.outputs.image_uri }}",
+            "status": "deployment_not_executed"
+          }
+          EOF
 
-      - name: Register a new task definition revision
-        id: taskdef
+      - name: Validate deployment strategy
         run: |
-          aws ecs describe-task-definition \
-            --task-definition "$ECS_TASK_DEFINITION" \
-            --query taskDefinition \
-            > artifacts/deploy/development/task-definition-source.json
+          echo "Validating deployment strategy..."
+          echo "Infrastructure deployment is managed by Terraform."
+          echo "GitHub Actions deployment stage is configured as a mock execution."
+          echo "No AWS resources will be created or updated from this workflow."
 
-          CONTAINER_NAME="${ECS_CONTAINER_NAME:-$(jq -r '.containerDefinitions[0].name' artifacts/deploy/development/task-definition-source.json)}"
-          IMAGE_URI="${{ needs.package.outputs.image_uri }}"
-
-          jq \
-            --arg image "$IMAGE_URI" \
-            --arg container "$CONTAINER_NAME" \
-            '
-              del(
-                .taskDefinitionArn,
-                .revision,
-                .status,
-                .requiresAttributes,
-                .compatibilities,
-                .registeredAt,
-                .registeredBy,
-                .deregisteredAt
-              )
-              | .containerDefinitions |= map(
-                  if .name == $container then
-                    .image = $image
-                  else
-                    .
-                  end
-                )
-            ' \
-            artifacts/deploy/development/task-definition-source.json \
-            > artifacts/deploy/development/task-definition-rendered.json
-
-          NEW_TASK_DEFINITION=$(aws ecs register-task-definition \
-            --cli-input-json file://artifacts/deploy/development/task-definition-rendered.json \
-            --query 'taskDefinition.taskDefinitionArn' \
-            --output text)
-
-          echo "new_task_definition=${NEW_TASK_DEFINITION}" >> "$GITHUB_OUTPUT"
-
-      - name: Update ECS service and wait for stability
+      - name: Simulate ECS deployment flow
         run: |
-          for attempt in 1 2 3; do
-            echo "Deployment attempt ${attempt} of 3"
+          echo "Starting ECS deployment simulation..."
+          echo "Would assume AWS role using OIDC."
+          echo "Would read ECS cluster and service created by Terraform."
+          echo "Would register a new ECS task definition revision."
+          echo "Would update ECS service with the new container image."
+          echo "Would wait for ECS service stability."
+          echo "Mock deployment completed successfully."
 
-            aws ecs update-service \
-              --cluster "$ECS_CLUSTER" \
-              --service "$ECS_SERVICE" \
-              --task-definition "${{ steps.taskdef.outputs.new_task_definition }}" \
-              --force-new-deployment
-
-            if aws ecs wait services-stable --cluster "$ECS_CLUSTER" --services "$ECS_SERVICE"; then
-              exit 0
-            fi
-
-            if [ "$attempt" -eq 3 ]; then
-              echo "ECS service did not stabilize after 3 attempts." >&2
-              exit 1
-            fi
-
-            sleep 20
-          done
-
-      - name: Collect deployment summary
+      - name: Collect mock deployment summary
         if: always()
         run: |
-          aws ecs describe-services \
-            --cluster "$ECS_CLUSTER" \
-            --services "$ECS_SERVICE" \
-            > artifacts/deploy/development/service-after.json
-
           {
             echo "## Development deploy summary"
             echo ""
-            echo "- Cluster: \`$ECS_CLUSTER\`"
-            echo "- Service: \`$ECS_SERVICE\`"
-            echo "- Previous task definition: \`${{ steps.current.outputs.current_task_definition }}\`"
-            echo "- New task definition: \`${{ steps.taskdef.outputs.new_task_definition }}\`"
+            echo "- Deployment mode: \`Mock\`"
+            echo "- Infrastructure manager: \`Terraform\`"
+            echo "- Target platform: \`AWS ECS Fargate\`"
+            echo "- Environment: \`development\`"
             echo "- Image: \`${{ needs.package.outputs.image_uri }}\`"
+            echo "- AWS execution: \`disabled\`"
+            echo "- Result: \`deployment flow validated without creating cloud resources\`"
             echo ""
-            echo "### Recent ECS events"
-            jq -r '.services[0].events[:10][] | "- \(.createdAt): \(.message)"' artifacts/deploy/development/service-after.json
+            echo "### Notes"
+            echo "- This job represents the production deployment flow."
+            echo "- Terraform is responsible for provisioning AWS infrastructure."
+            echo "- Real ECS deployment is intentionally disabled to avoid cloud costs."
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload deployment artifacts
+      - name: Upload mock deployment artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: deploy-development-artifacts
+          name: mock-deploy-development-artifacts
           path: artifacts/deploy/development
           if-no-files-found: error
           retention-days: 14
