@@ -244,7 +244,8 @@ jobs:
     name: Deploy to ECS Development
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    # if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    if: ${{ false }}
     needs:
       - package
     environment:
