@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Hosting;
 namespace Wex.Purchases.IntegrationTests;
 
 public sealed class WexPurchasesFactory : WebApplicationFactory<Program>
@@ -33,28 +34,38 @@ public sealed class WexPurchasesFactory : WebApplicationFactory<Program>
             });
             services.AddDistributedMemoryCache();
             services.AddSingleton<ITreasuryApiService, FakeTreasuryApiService>();
-
-            var serviceProvider = services.BuildServiceProvider();
-
-            using var scope = serviceProvider.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<PurchaseDbContext>();
-
-            db.Database.EnsureCreated();
-
-            db.PurchaseTransactions.AddRange(
-                new PurchaseTransaction(
-                    ExistingPurchaseId1,
-                    "Book purchase",
-                    new DateTime(2026, 5, 1, 0, 0, 0, DateTimeKind.Utc),
-                    100.00m),
-                new PurchaseTransaction(
-                    ExistingPurchaseId2,
-                    "Grocery purchase",
-                    new DateTime(2026, 5, 2, 0, 0, 0, DateTimeKind.Utc),
-                    50.25m));
-
-            db.SaveChanges();
         });
+    }
+
+    protected override IHost CreateHost(IHostBuilder builder)
+    {
+        var host = base.CreateHost(builder);
+
+        SeedDatabase(host.Services);
+
+        return host;
+    }
+
+    private static void SeedDatabase(IServiceProvider services)
+    {
+        using var scope = services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<PurchaseDbContext>();
+
+        db.Database.EnsureCreated();
+
+        db.PurchaseTransactions.AddRange(
+            new PurchaseTransaction(
+                ExistingPurchaseId1,
+                "Book purchase",
+                new DateTime(2026, 5, 1, 0, 0, 0, DateTimeKind.Utc),
+                100.00m),
+            new PurchaseTransaction(
+                ExistingPurchaseId2,
+                "Grocery purchase",
+                new DateTime(2026, 5, 2, 0, 0, 0, DateTimeKind.Utc),
+                50.25m));
+
+        db.SaveChanges();
     }
 
     private static bool IsPurchaseDbContextRegistration(ServiceDescriptor descriptor)

@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Wex.Purchases.Infrastructure.Treasury.Options;
 using Wex.Purchases.Infrastructure.Treasury.Policies;
@@ -66,20 +67,30 @@ public sealed class ResilientTreasuryFactory(
                 new TreasuryApiService(
                     serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("ResilientTreasury"),
                     serviceProvider.GetRequiredService<IOptions<TreasuryApiOptions>>()));
-
-            var serviceProvider = services.BuildServiceProvider();
-
-            using var scope = serviceProvider.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<PurchaseDbContext>();
-
-            db.Database.EnsureCreated();
-            db.PurchaseTransactions.Add(new PurchaseTransaction(
-                existingPurchaseId,
-                "Book purchase",
-                new DateTime(2026, 5, 1, 0, 0, 0, DateTimeKind.Utc),
-                100.00m));
-            db.SaveChanges();
         });
+    }
+
+    protected override IHost CreateHost(IHostBuilder builder)
+    {
+        var host = base.CreateHost(builder);
+
+        SeedDatabase(host.Services);
+
+        return host;
+    }
+
+    private void SeedDatabase(IServiceProvider services)
+    {
+        using var scope = services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<PurchaseDbContext>();
+
+        db.Database.EnsureCreated();
+        db.PurchaseTransactions.Add(new PurchaseTransaction(
+            existingPurchaseId,
+            "Book purchase",
+            new DateTime(2026, 5, 1, 0, 0, 0, DateTimeKind.Utc),
+            100.00m));
+        db.SaveChanges();
     }
 
     private static bool IsPurchaseDbContextRegistration(ServiceDescriptor descriptor)

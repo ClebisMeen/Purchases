@@ -13,7 +13,9 @@ using System.Diagnostics;
 Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
     .WriteTo.Console(new CompactJsonFormatter())
-    .CreateBootstrapLogger();
+    .CreateLogger();
+
+var closeSerilogOnShutdown = true;
 
 try
 {
@@ -46,6 +48,7 @@ try
     builder.Services.AddTreasuryInfrastructure(builder.Configuration);
 
     var app = builder.Build();
+    closeSerilogOnShutdown = !app.Environment.IsEnvironment("Testing");
 
     if (!app.Environment.IsEnvironment("Testing"))
     {
@@ -94,10 +97,14 @@ catch (Exception exception) when (exception.GetType().Name == "HostAbortedExcept
 catch (Exception exception)
 {
     Log.Fatal(exception, "Wex Purchases API terminated unexpectedly.");
+    throw;
 }
 finally
 {
-    await Log.CloseAndFlushAsync();
+    if (closeSerilogOnShutdown)
+    {
+        await Log.CloseAndFlushAsync();
+    }
 }
 
 public partial class Program;
