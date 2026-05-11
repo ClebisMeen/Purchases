@@ -12,6 +12,7 @@ This repository was built for the Wex technical challenge and demonstrates Clean
 - [Architecture](#architecture)
 - [Local Setup](#local-setup)
 - [Running With Docker Compose](#running-with-docker-compose)
+- [Local Observability With Datadog](#local-observability-with-datadog)
 - [Local Code Quality With SonarQube](#local-code-quality-with-sonarqube)
 - [Running Tests](#running-tests)
 - [API Reference](#api-reference)
@@ -85,7 +86,7 @@ flowchart LR
     Treasury --> FiscalData[U.S. Treasury API]
 ```
 
-![Architecture diagram placeholder](docs/assets/architecture-placeholder.svg)
+![Architecture diagram](docs/assets/wex-purchases-api.drawio.svg)
 
 Key design points:
 
@@ -146,6 +147,12 @@ The API applies EF Core migrations automatically during startup when not running
 
 Detailed guide: [Docker Compose](docs/setup/docker-compose.md).
 
+## Local Observability With Datadog
+
+The project includes a Datadog observability guide for local development in [Datadog Observability](docs/observability/datadog.md). It explains how to configure the `datadog-agent` service in Docker Compose, provide the required `DD_API_KEY` through a local `.env` file, and validate that logs, APM traces, .NET runtime metrics, and container telemetry are reaching Datadog.
+
+The guide also documents how the API instrumentation works with `Datadog.Trace.Bundle`, which environment variables are used by the API and the Agent, where to inspect infrastructure, logs, traces, and metrics in the Datadog UI, and how to troubleshoot common issues such as missing traces or logs.
+
 ## Local Code Quality With SonarQube
 
 The Docker Compose file includes a local SonarQube Community Edition service and a dedicated PostgreSQL database used only by SonarQube.
@@ -180,7 +187,7 @@ Create the first local project:
 
 1. Sign in to SonarQube.
 2. Choose to create a local project manually.
-3. Use `wex-purchases` as the project key.
+3. Use `wex-purchases-api` as the project key.
 4. Generate a token for local analysis.
 5. Replace `<TOKEN>` in the commands below with the generated token.
 
@@ -190,7 +197,7 @@ Run the .NET analysis locally:
 docker compose up -d sonarqube sonarqube-db
 dotnet tool install --global dotnet-sonarscanner
 
-dotnet sonarscanner begin /k:"wex-purchases" /d:sonar.host.url="http://localhost:9000" /d:sonar.token="<TOKEN>"
+dotnet sonarscanner begin /k:"wex-purchases-api" /d:sonar.host.url="http://localhost:9000" /d:sonar.token="<TOKEN>"
 
 dotnet build
 
@@ -204,6 +211,8 @@ dotnet build src/Wex.Purchases.slnx
 ```
 
 This setup is local-only. It does not configure GitHub Actions or SonarCloud integration.
+
+Detailed guide: [SonarQube](docs/ci-cd/sonarqube.md).
 
 ## Running Tests
 
@@ -306,7 +315,7 @@ The repository contains separate workflows for `develop` and `main`.
 
 The workflows use GitHub OIDC to assume AWS IAM roles without storing long-lived AWS access keys in GitHub.
 
-![Pipeline diagram placeholder](docs/assets/pipeline-placeholder.svg)
+![CI/CD pipeline diagram](docs/assets/pipeline-placeholder.svg)
 
 See [GitHub Actions](docs/ci-cd/github-actions.md), [Deployment Flow](docs/ci-cd/deployment-flow.md), and [Terraform Pipeline](docs/ci-cd/terraform-pipeline.md).
 
@@ -326,7 +335,7 @@ flowchart TB
     Secrets[Secrets Manager] --> ECS
 ```
 
-![Terraform diagram placeholder](docs/assets/terraform-placeholder.svg)
+![Terraform infrastructure diagram](docs/assets/terraform-placeholder.svg)
 
 See [Terraform](docs/infra/terraform.md), [ECS Fargate](docs/infra/ecs-fargate.md), [Networking](docs/infra/networking.md), and [Observability](docs/infra/observability.md).
 
@@ -342,6 +351,7 @@ See [Terraform](docs/infra/terraform.md), [ECS Fargate](docs/infra/ecs-fargate.m
 │   ├── business
 │   ├── ci-cd
 │   ├── infra
+│   ├── observability
 │   ├── setup
 │   └── testing
 ├── infra
@@ -385,6 +395,7 @@ See [Terraform](docs/infra/terraform.md), [ECS Fargate](docs/infra/ecs-fargate.m
 ### CI/CD
 
 - [GitHub Actions](docs/ci-cd/github-actions.md)
+- [SonarQube](docs/ci-cd/sonarqube.md)
 - [Terraform Pipeline](docs/ci-cd/terraform-pipeline.md)
 - [Deployment Flow](docs/ci-cd/deployment-flow.md)
 - [Environments](docs/ci-cd/environments.md)
@@ -408,3 +419,7 @@ See [Terraform](docs/infra/terraform.md), [ECS Fargate](docs/infra/ecs-fargate.m
 - [ECS Fargate](docs/infra/ecs-fargate.md)
 - [Networking](docs/infra/networking.md)
 - [Observability](docs/infra/observability.md)
+
+### Observability
+
+- [Datadog Observability](docs/observability/datadog.md)

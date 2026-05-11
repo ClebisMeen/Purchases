@@ -31,6 +31,8 @@ Swagger UI is available in development:
 http://localhost:8080/swagger
 ```
 
+![Swagger UI da Wex Purchases API](../assets/swagger-1.png)
+
 ## Running the API From Source
 
 Use this path when you want a tighter edit-debug loop in the IDE.

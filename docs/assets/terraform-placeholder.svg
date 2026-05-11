@@ -1,8 +1,110 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="500" viewBox="0 0 1200 500" role="img" aria-labelledby="title desc">
-  <title id="title">Terraform diagram placeholder</title>
-  <desc id="desc">Placeholder for the Wex Purchases API Terraform infrastructure diagram.</desc>
-  <rect width="1200" height="500" fill="#f8fafc"/>
-  <rect x="40" y="40" width="1120" height="420" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
-  <text x="600" y="220" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" fill="#0f172a">Terraform Diagram Placeholder</text>
-  <text x="600" y="270" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="#475569">VPC, ALB, ECS Fargate, ECR, RDS MySQL, ElastiCache Redis, CloudWatch</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">Wex Purchases API Terraform infrastructure</title>
+  <desc id="desc">Diagram of the Terraform-managed AWS infrastructure: internet traffic reaches an Application Load Balancer in public subnets, which routes to ECS Fargate tasks in private application subnets. ECS pulls images from ECR, reads database and Redis connection secrets from Secrets Manager, writes logs and alarms to CloudWatch, connects to RDS MySQL and ElastiCache Redis in private data subnets, and calls the Treasury API through NAT gateway egress.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f8fafc; }
+      .panel { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.5; }
+      .vpc { fill: #f1f5f9; stroke: #64748b; stroke-width: 2; }
+      .public { fill: #eff6ff; stroke: #2563eb; stroke-width: 1.5; }
+      .app { fill: #f0fdf4; stroke: #16a34a; stroke-width: 1.5; }
+      .data { fill: #fff7ed; stroke: #ea580c; stroke-width: 1.5; }
+      .external { fill: #eef2ff; stroke: #6366f1; }
+      .service { fill: #ffffff; stroke-width: 2; rx: 10; ry: 10; }
+      .compute { stroke: #16a34a; }
+      .network { stroke: #2563eb; }
+      .storage { stroke: #ea580c; }
+      .support { stroke: #7c3aed; }
+      .text { font-family: Arial, sans-serif; fill: #0f172a; }
+      .muted { font-family: Arial, sans-serif; fill: #475569; }
+      .title { font-size: 28px; font-weight: 700; }
+      .subtitle { font-size: 15px; }
+      .label { font-size: 15px; font-weight: 700; }
+      .small { font-size: 13px; }
+      .tiny { font-size: 12px; }
+      .arrow { fill: none; stroke: #334155; stroke-width: 2.2; marker-end: url(#arrowhead); }
+      .dashed { stroke-dasharray: 7 6; }
+      .egress { stroke: #64748b; stroke-dasharray: 7 6; }
+    </style>
+    <marker id="arrowhead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" width="1200" height="720"/>
+  <rect class="panel" x="24" y="24" width="1152" height="672" rx="18"/>
+
+  <text class="text title" x="60" y="66">Terraform-managed AWS Infrastructure</text>
+  <text class="muted subtitle" x="60" y="92">Generated from infra/environments and infra/modules: VPC, ALB, ECS Fargate, ECR, RDS MySQL, ElastiCache Redis, Secrets Manager, and CloudWatch.</text>
+
+  <rect class="external service support" x="58" y="148" width="150" height="68"/>
+  <text class="text label" x="133" y="177" text-anchor="middle">Internet</text>
+  <text class="muted small" x="133" y="199" text-anchor="middle">public ingress</text>
+
+  <rect class="external service support" x="58" y="512" width="150" height="68"/>
+  <text class="text label" x="133" y="541" text-anchor="middle">Treasury API</text>
+  <text class="muted small" x="133" y="563" text-anchor="middle">external HTTPS</text>
+
+  <rect class="vpc" x="260" y="132" width="620" height="470" rx="18"/>
+  <text class="text label" x="288" y="164">VPC module</text>
+  <text class="muted small" x="288" y="186">2 AZs, public subnets, private app subnets, private data subnets, NAT gateway</text>
+
+  <rect class="public" x="292" y="212" width="550" height="98" rx="14"/>
+  <text class="muted label" x="314" y="241">Public subnets</text>
+  <rect class="service network" x="338" y="256" width="170" height="40"/>
+  <text class="text small" x="423" y="281" text-anchor="middle">Application Load Balancer</text>
+  <rect class="service network" x="606" y="256" width="170" height="40"/>
+  <text class="text small" x="691" y="281" text-anchor="middle">NAT Gateway</text>
+
+  <rect class="app" x="292" y="342" width="550" height="112" rx="14"/>
+  <text class="muted label" x="314" y="371">Private application subnets</text>
+  <rect class="service compute" x="384" y="388" width="196" height="44"/>
+  <text class="text label" x="482" y="414" text-anchor="middle">ECS Fargate Service</text>
+  <rect class="service compute" x="622" y="388" width="132" height="44"/>
+  <text class="text small" x="688" y="414" text-anchor="middle">Auto Scaling</text>
+
+  <rect class="data" x="292" y="486" width="550" height="86" rx="14"/>
+  <text class="muted label" x="314" y="515">Private data subnets</text>
+  <rect class="service storage" x="350" y="528" width="150" height="32"/>
+  <text class="text small" x="425" y="549" text-anchor="middle">RDS MySQL</text>
+  <rect class="service storage" x="622" y="528" width="150" height="32"/>
+  <text class="text small" x="697" y="549" text-anchor="middle">ElastiCache Redis</text>
+
+  <rect class="external service storage" x="960" y="144" width="162" height="70"/>
+  <text class="text label" x="1041" y="174" text-anchor="middle">Amazon ECR</text>
+  <text class="muted small" x="1041" y="196" text-anchor="middle">Docker image source</text>
+
+  <rect class="external service support" x="960" y="264" width="162" height="82"/>
+  <text class="text label" x="1041" y="293" text-anchor="middle">Secrets Manager</text>
+  <text class="muted small" x="1041" y="316" text-anchor="middle">PurchaseDb + Redis</text>
+  <text class="muted small" x="1041" y="335" text-anchor="middle">connection strings</text>
+
+  <rect class="external service support" x="960" y="398" width="162" height="82"/>
+  <text class="text label" x="1041" y="427" text-anchor="middle">CloudWatch</text>
+  <text class="muted small" x="1041" y="450" text-anchor="middle">logs, metrics</text>
+  <text class="muted small" x="1041" y="469" text-anchor="middle">and alarms</text>
+
+  <rect class="external service support" x="960" y="532" width="162" height="62"/>
+  <text class="text label" x="1041" y="560" text-anchor="middle">Terraform</text>
+  <text class="muted small" x="1041" y="581" text-anchor="middle">dev and prod envs</text>
+
+  <path class="arrow" d="M 208 182 H 338"/>
+  <path class="arrow" d="M 423 296 V 388"/>
+  <path class="arrow" d="M 580 410 H 622"/>
+  <path class="arrow" d="M 482 432 V 474 C 482 504 425 504 425 528"/>
+  <path class="arrow" d="M 520 432 V 474 C 520 504 697 504 697 528"/>
+
+  <path class="arrow dashed" d="M 960 179 H 820 C 786 179 786 388 580 405"/>
+  <path class="arrow dashed" d="M 960 305 H 800 C 760 305 760 388 580 410"/>
+  <path class="arrow dashed" d="M 960 439 H 826 C 790 439 790 432 754 416"/>
+  <path class="arrow egress" d="M 482 388 C 482 330 610 330 691 296"/>
+  <path class="arrow egress" d="M 606 276 H 238 C 200 276 180 512 208 546"/>
+
+  <path class="arrow dashed" d="M 1041 532 V 500"/>
+  <path class="arrow dashed" d="M 1041 532 C 1000 502 930 550 842 550"/>
+  <path class="arrow dashed" d="M 1041 532 C 980 500 940 410 842 410"/>
+  <path class="arrow dashed" d="M 1041 532 C 980 450 932 258 842 258"/>
+
+  <rect x="286" y="614" width="626" height="42" rx="21" fill="#ffffff" stroke="#cbd5e1"/>
+  <text class="muted small" x="599" y="640" text-anchor="middle">Security groups allow ALB-to-ECS traffic and ECS-to-data-service access; ECS task secrets are injected from Secrets Manager.</text>
 </svg>
