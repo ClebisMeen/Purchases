@@ -23,8 +23,8 @@ env:
   DOCKERFILE_PATH: ./Dockerfile
   BUILD_CONTEXT: .
   AWS_REGION: ${{ vars.AWS_REGION }}
-  AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
-  ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+  AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+  ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
   ECS_CLUSTER: ${{ vars.ECS_CLUSTER_DEVELOP }}
   ECS_SERVICE: ${{ vars.ECS_SERVICE_DEVELOP }}
   ECS_TASK_DEFINITION: ${{ vars.ECS_TASK_DEFINITION_DEVELOP }}
@@ -174,8 +174,8 @@ jobs:
       name: development
     env:
       AWS_REGION: ${{ vars.AWS_REGION }}
-      AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
-      ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+      ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
     outputs:
       image_uri: ${{ steps.image.outputs.image_uri }}
 
