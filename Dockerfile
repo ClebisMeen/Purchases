@@ -35,6 +35,22 @@ RUN dotnet publish "./Wex.Purchases.Api.csproj" \
 
 FROM base AS final
 COPY --from=build /app/publish .
+
+# Datadog.Trace.Bundle ships the native profiler with the app, keeping local APM setup
+# self-contained and independent from host-level tracer installation.
+ARG TARGETARCH
+RUN /app/datadog/createLogPath.sh && \
+    tracer_arch="linux-x64"; \
+    if [ "$TARGETARCH" = "arm64" ]; then tracer_arch="linux-arm64"; fi; \
+    ln -sf "/app/datadog/${tracer_arch}/Datadog.Trace.ClrProfiler.Native.so" /app/datadog/Datadog.Trace.ClrProfiler.Native.so
+
+ENV CORECLR_ENABLE_PROFILING=1 \
+    CORECLR_PROFILER={846F5F1C-F9AE-4B07-969E-05C26BC060D8} \
+    CORECLR_PROFILER_PATH=/app/datadog/Datadog.Trace.ClrProfiler.Native.so \
+    DD_DOTNET_TRACER_HOME=/app/datadog \
+    DD_LOGS_INJECTION=true \
+    DD_RUNTIME_METRICS_ENABLED=true
+
 USER $APP_UID
 
 ENTRYPOINT ["dotnet", "Wex.Purchases.Api.dll"]

@@ -7,6 +7,9 @@
 *.suo
 *.userosscache
 *.sln.docstates
+.env
+.env.*
+!.env.example
 
 # IDE/editor folders
 .vs/

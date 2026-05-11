@@ -11,6 +11,16 @@ services:
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__PurchaseDb: server=wex-mysql;port=3306;database=wex_purchases;user=wex;password=wex123
       ConnectionStrings__Redis: wex-redis:6379
+      DD_ENV: development
+      DD_SERVICE: wex-purchases-api
+      DD_VERSION: 1.0.0
+      DD_AGENT_HOST: datadog-agent
+      DD_TRACE_AGENT_PORT: 8126
+      DD_TRACE_ENABLED: "true"
+      # Keeps logs, traces and runtime metrics tied to the same service in Datadog.
+      DD_LOGS_INJECTION: "true"
+      DD_RUNTIME_METRICS_ENABLED: "true"
+      DD_TRACE_PROPAGATION_STYLE: datadog,tracecontext
     ports:
       - "8080:8080"
     depends_on:
@@ -18,6 +28,13 @@ services:
         condition: service_healthy
       wex-redis:
         condition: service_started
+      datadog-agent:
+        condition: service_started
+    labels:
+      com.datadoghq.tags.env: development
+      com.datadoghq.tags.service: wex-purchases-api
+      com.datadoghq.tags.version: 1.0.0
+      com.datadoghq.ad.logs: '[{"source":"csharp","service":"wex-purchases-api"}]'
     restart: unless-stopped
 
   wex-redis:
@@ -25,6 +42,8 @@ services:
     container_name: wex-purchases-redis
     ports:
       - "6379:6379"
+    labels:
+      com.datadoghq.ad.logs: '[{"source":"redis","service":"wex-purchases-redis"}]'
     restart: unless-stopped
 
   wex-mysql:
@@ -44,6 +63,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+    labels:
+      com.datadoghq.ad.logs: '[{"source":"mysql","service":"wex-purchases-mysql"}]'
     restart: unless-stopped
 
   sonarqube:
@@ -61,6 +82,8 @@ services:
       - sonarqube_logs:/opt/sonarqube/logs
     depends_on:
       - sonarqube-db
+    labels:
+      com.datadoghq.ad.logs: '[{"source":"sonarqube","service":"wex-purchases-sonarqube"}]'
     restart: unless-stopped
 
   sonarqube-db:
@@ -72,6 +95,41 @@ services:
       POSTGRES_PASSWORD: sonarqube
     volumes:
       - sonarqube_db_data:/var/lib/postgresql/data
+    labels:
+      com.datadoghq.ad.logs: '[{"source":"postgresql","service":"wex-purchases-sonarqube-db"}]'
+    restart: unless-stopped
+
+  datadog-agent:
+    image: gcr.io/datadoghq/agent:latest
+    container_name: wex-purchases-datadog-agent
+    environment:
+      DD_API_KEY: ${DD_API_KEY}
+      DD_SITE: ${DD_SITE:-datadoghq.com}
+      DD_ENV: ${DD_ENV:-development}
+      DD_SERVICE: ${DD_SERVICE:-wex-purchases}
+      DD_VERSION: ${DD_VERSION:-1.0.0}
+      DD_LOGS_ENABLED: "true"
+      DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL: "true"
+      DD_APM_ENABLED: "true"
+      DD_APM_NON_LOCAL_TRAFFIC: "true"
+      DD_DOGSTATSD_NON_LOCAL_TRAFFIC: "true"
+      DD_PROCESS_CONFIG_CONTAINER_COLLECTION_ENABLED: "true"
+      DD_CONTAINER_EXCLUDE_LOGS: name:wex-purchases-datadog-agent
+    ports:
+      - "8126:8126"
+    expose:
+      - "8125/udp"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc/:/host/proc/:ro
+      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    cgroup: host
+    pid: host
+    labels:
+      com.datadoghq.tags.env: development
+      com.datadoghq.tags.service: datadog-agent
+      com.datadoghq.tags.version: 1.0.0
     restart: unless-stopped
 
 volumes:
