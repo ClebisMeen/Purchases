@@ -1,4 +1,4 @@
-namespace Wex.Purchases.Application.Results;
+namespace Wex.Purchases.Contracts.Results;
 
 /// <summary>
 /// Represents a purchase enriched with treasury exchange-rate data and converted amount.

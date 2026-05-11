@@ -12,7 +12,6 @@ global using System.Net;
 global using System.Net.Http.Json;
 
 // Project
-global using Wex.Purchases.Application.Results;
 global using Wex.Purchases.Contracts.Requests;
 global using Wex.Purchases.Contracts.Results;
 global using Wex.Purchases.Domain.Entities;
