@@ -85,7 +85,7 @@ flowchart LR
     Treasury --> FiscalData[U.S. Treasury API]
 ```
 
-![Architecture diagram placeholder](docs/assets/architecture-placeholder.svg)
+![Architecture diagram](docs/assets//wex-purchases-api.drawio.png)
 
 Key design points:
 
