@@ -267,15 +267,15 @@ jobs:
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' && needs.package.result == 'success' }}
     permissions:
       contents: write
-      issues: write
       pull-requests: write
+      issues: write
 
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.RELEASE_PR_TOKEN || github.token }}
+          token: ${{ github.token }}
 
       - name: Configure Git author
         run: |
@@ -292,29 +292,19 @@ jobs:
 
           if [ -z "$LATEST_TAG" ]; then
             NEW_VERSION="v1.0.0"
-            echo "No semantic version tag found. Starting at ${NEW_VERSION}."
           else
             VERSION="${LATEST_TAG#v}"
             IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
             PATCH=$((PATCH + 1))
             NEW_VERSION="v${MAJOR}.${MINOR}.${PATCH}"
-            echo "Latest semantic version tag found: ${LATEST_TAG}"
           fi
 
-          echo "New version generated: ${NEW_VERSION}"
-
-          if git rev-parse -q --verify "refs/tags/${NEW_VERSION}" >/dev/null; then
-            echo "::error::Tag ${NEW_VERSION} already exists. Release PR job cannot continue."
-            exit 1
-          fi
-
-          echo "latest_tag=${LATEST_TAG}" >> "$GITHUB_OUTPUT"
           echo "new_version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
 
       - name: Check for existing release pull request
         id: existing_pr
         env:
-          GH_TOKEN: ${{ secrets.RELEASE_PR_TOKEN || github.token }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           PR_NUMBER="$(gh pr list \
             --base main \
@@ -324,30 +314,16 @@ jobs:
             --jq '.[0].number // ""')"
 
           if [ -n "$PR_NUMBER" ]; then
-            echo "Open pull request from develop to main already exists: #${PR_NUMBER}"
             echo "exists=true" >> "$GITHUB_OUTPUT"
             echo "pr_number=${PR_NUMBER}" >> "$GITHUB_OUTPUT"
           else
-            echo "No open pull request from develop to main was found."
             echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
-
-      - name: Validate release pull request token
-        if: steps.existing_pr.outputs.exists == 'false'
-        env:
-          RELEASE_PR_TOKEN_CONFIGURED: ${{ secrets.RELEASE_PR_TOKEN != '' }}
-        run: |
-          if [ "$RELEASE_PR_TOKEN_CONFIGURED" != "true" ]; then
-            echo "::error::The repository does not allow GITHUB_TOKEN to create pull requests. Configure a RELEASE_PR_TOKEN secret with permission to create pull requests before running this job."
-            exit 1
-          fi
-
-          echo "Release pull request token is configured."
 
       - name: Ensure pull request labels exist
         if: steps.existing_pr.outputs.exists == 'false'
         env:
-          GH_TOKEN: ${{ secrets.RELEASE_PR_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           gh label create release \
             --color "0E8A16" \
@@ -359,8 +335,6 @@ jobs:
             --description "Pull requests created by automation" \
             --force
 
-          echo "Pull request labels are available: release, automated-pr."
-
       - name: Create and push Git tag
         if: steps.existing_pr.outputs.exists == 'false'
         run: |
@@ -369,33 +343,29 @@ jobs:
           git tag "$NEW_VERSION" "$GITHUB_SHA"
           git push origin "$NEW_VERSION"
 
-          echo "Tag ${NEW_VERSION} created and pushed for commit ${GITHUB_SHA}."
-
       - name: Create release pull request
         if: steps.existing_pr.outputs.exists == 'false'
         env:
-          GH_TOKEN: ${{ secrets.RELEASE_PR_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
           NEW_VERSION: ${{ steps.version.outputs.new_version }}
         run: |
           cat > pr-body.md <<EOF
-          Versão gerada: ${NEW_VERSION}
-          Branch origem: develop
-          Branch destino: main
+          Version: ${NEW_VERSION}
+          Source branch: develop
+          Target branch: main
           Commit SHA: ${GITHUB_SHA}
-          Data da execução: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          Execution date: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-          Este Pull Request foi criado automaticamente após a conclusão com sucesso do job package.
+          This Pull Request was automatically created after the package job completed successfully.
           EOF
 
-          PR_URL="$(gh pr create \
+          gh pr create \
             --base main \
             --head develop \
             --title "Release ${NEW_VERSION}" \
             --body-file pr-body.md \
             --label release \
-            --label automated-pr)"
-
-          echo "Release pull request created: ${PR_URL}"
+            --label automated-pr
 
   deploy:
     name: Mock Deploy to ECS Development
