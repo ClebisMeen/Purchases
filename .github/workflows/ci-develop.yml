@@ -242,6 +242,23 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+  sonarqube-analysis:
+    name: SonarQube Analysis
+    runs-on: ubuntu-latest
+    needs: package
+
+    steps:
+      - name: Simulate SonarQube analysis
+        run: |
+          echo "SonarQube analysis would run here."
+          echo "Example steps:"
+          echo "- Restore dependencies"
+          echo "- Run dotnet sonarscanner begin"
+          echo "- Run dotnet build"
+          echo "- Run dotnet test with coverage"
+          echo "- Run dotnet sonarscanner end"
+          echo "SonarQube pipeline stage prepared for enterprise integration."
+
   create-release-pr:
     name: Create Release Pull Request
     runs-on: ubuntu-latest
@@ -512,3 +529,19 @@ jobs:
           path: artifacts/deploy/development
           if-no-files-found: error
           retention-days: 14
+
+  datadog-monitoring:
+    name: Datadog Monitoring Setup
+    runs-on: ubuntu-latest
+    needs: deploy
+
+    steps:
+      - name: Simulate Datadog configuration
+        run: |
+          echo "Datadog monitoring configuration would run here."
+          echo "Example steps:"
+          echo "- Configure DD_API_KEY"
+          echo "- Configure DD_SITE"
+          echo "- Send deployment marker"
+          echo "- Enable logs, metrics and traces"
+          echo "Datadog pipeline stage prepared for enterprise integration."          
