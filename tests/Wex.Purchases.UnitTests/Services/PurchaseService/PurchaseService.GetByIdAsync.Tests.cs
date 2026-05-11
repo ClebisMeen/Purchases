@@ -1,5 +1,3 @@
-using Wex.Purchases.Infrastructure.Treasury.Results;
-
 namespace Wex.Purchases.UnitTests.Services;
 
 public class PurchaseServiceGetByIdAsyncTests

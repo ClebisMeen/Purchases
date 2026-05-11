@@ -34,8 +34,6 @@ public class MoneyTests
     [InlineData(10.125, 1, 10.13)]
     [InlineData(10.125, 1.5, 15.20)]
     [InlineData(10.125, 0.5, 5.07)]
-    [InlineData(10.12, 0, 0)]
-    [InlineData(10.12, -1.5, -15.18)]
     [InlineData(-10.125, 1, -10.13)]
     [InlineData(-10.125, 0.5, -5.07)]
     [InlineData(1, 1.005, 1.01)]
@@ -47,6 +45,19 @@ public class MoneyTests
         var converted = money.Convert(exchangeRate);
 
         Assert.Equal(expectedAmount, converted.Amount);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1.5)]
+    public void Testar_Convert_ExchangeRateInvalido_DeveGerarErro(decimal exchangeRate)
+    {
+        var money = Money.FromAmount(10.12m);
+
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => money.Convert(exchangeRate));
+
+        Assert.Equal("exchangeRate", exception.ParamName);
+        Assert.Equal("ExchangeRate must be positive. (Parameter 'exchangeRate')", exception.Message);
     }
 
     [Fact]

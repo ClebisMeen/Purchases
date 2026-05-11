@@ -23,5 +23,13 @@ public sealed record Money : ValueObject
     /// <summary>
     /// Converts the amount using the provided exchange rate.
     /// </summary>
-    public Money Convert(decimal exchangeRate) => new(Amount * exchangeRate);
+    public Money Convert(decimal exchangeRate)
+    {
+        if (exchangeRate <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(exchangeRate), "ExchangeRate must be positive.");
+        }
+
+        return new Money(Amount * exchangeRate);
+    }
 }

@@ -6,8 +6,6 @@ global using Microsoft.Extensions.Logging;
 global using FluentValidation;
 
 // Project
-global using Wex.Purchases.Application.Requests;
-global using Wex.Purchases.Application.Results;
 global using Wex.Purchases.Contracts.Requests;
 global using Wex.Purchases.Contracts.Results;
 global using Wex.Purchases.Domain.Entities;

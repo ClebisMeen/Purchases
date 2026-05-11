@@ -55,3 +55,6 @@ coverage/
 *.trx
 *.coverage
 *.coveragexml
+
+
+src-improvement-suggestions.md
