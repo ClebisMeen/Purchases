@@ -1,0 +1,109 @@
+name: CI/CD - Develop
+
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - develop
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Restore and Build
+    uses: ./.github/workflows/ci-shared-build.yml
+    with:
+      dotnet_version: 10.0.x
+      solution_path: src/Wex.Purchases.slnx
+      unit_test_project_path: tests/Wex.Purchases.UnitTests/Wex.Purchases.UnitTests.csproj
+      integration_test_project_path: tests/Wex.Purchases.IntegrationTests/Wex.Purchases.IntegrationTests.csproj
+
+  tests:
+    name: Test - ${{ matrix.suite.name }}
+    uses: ./.github/workflows/ci-shared-tests.yml
+    strategy:
+      fail-fast: true
+      matrix:
+        suite:
+          - name: Unit
+            id: unit
+            project: tests/Wex.Purchases.UnitTests/Wex.Purchases.UnitTests.csproj
+          - name: Integration
+            id: integration
+            project: tests/Wex.Purchases.IntegrationTests/Wex.Purchases.IntegrationTests.csproj
+    with:
+      dotnet_version: 10.0.x
+      suite_name: ${{ matrix.suite.name }}
+      suite_id: ${{ matrix.suite.id }}
+      project_path: ${{ matrix.suite.project }}
+
+  format:
+    name: Formatting and Code Style
+    uses: ./.github/workflows/ci-shared-format.yml
+    with:
+      dotnet_version: 10.0.x
+      solution_path: src/Wex.Purchases.slnx
+      unit_test_project_path: tests/Wex.Purchases.UnitTests/Wex.Purchases.UnitTests.csproj
+      integration_test_project_path: tests/Wex.Purchases.IntegrationTests/Wex.Purchases.IntegrationTests.csproj
+
+  package:
+    name: Build and Push Development Image
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    needs:
+      - build
+      - tests
+      - format
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/ci-shared-package.yml
+    with:
+      build_context: .
+      dockerfile_path: ./Dockerfile
+      environment_name: development
+    secrets:
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+      ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+      AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME_DEVELOP }}
+
+  sonarqube-analysis:
+    name: SonarQube Analysis
+    needs:
+      - package
+    uses: ./.github/workflows/ci-shared-sonarqube.yml
+
+  create-release-pr:
+    name: Create Release Pull Request
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' && needs.package.result == 'success' }}
+    needs:
+      - package
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    uses: ./.github/workflows/ci-shared-release-pr.yml
+
+  deploy:
+    name: Mock Deploy to ECS Development
+    needs:
+      - package
+    concurrency:
+      group: deploy-development
+      cancel-in-progress: false
+    uses: ./.github/workflows/ci-shared-mock-deploy.yml
+    with:
+      environment_name: development
+      image_uri: ${{ needs.package.outputs.image_uri }}
+
+  datadog-monitoring:
+    name: Datadog Monitoring Setup
+    needs:
+      - deploy
+    uses: ./.github/workflows/ci-shared-datadog.yml

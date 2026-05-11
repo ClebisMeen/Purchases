@@ -1,0 +1,112 @@
+name: CI Shared - Release PR
+
+on:
+  workflow_call:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  create-release-pr:
+    name: Create Release Pull Request
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ github.token }}
+
+      - name: Configure Git author
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Fetch Git tags
+        run: git fetch --tags --force
+
+      - name: Generate release version
+        id: version
+        run: |
+          LATEST_TAG="$(git tag --list 'v*.*.*' --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1 || true)"
+
+          if [ -z "$LATEST_TAG" ]; then
+            NEW_VERSION="v1.0.0"
+          else
+            VERSION="${LATEST_TAG#v}"
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+            PATCH=$((PATCH + 1))
+            NEW_VERSION="v${MAJOR}.${MINOR}.${PATCH}"
+          fi
+
+          echo "new_version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Check for existing release pull request
+        id: existing_pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PR_NUMBER="$(gh pr list \
+            --base main \
+            --head develop \
+            --state open \
+            --json number \
+            --jq '.[0].number // ""')"
+
+          if [ -n "$PR_NUMBER" ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "pr_number=${PR_NUMBER}" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Ensure pull request labels exist
+        if: steps.existing_pr.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh label create release \
+            --color "0E8A16" \
+            --description "Release pull requests" \
+            --force
+
+          gh label create automated-pr \
+            --color "1D76DB" \
+            --description "Pull requests created by automation" \
+            --force
+
+      - name: Create and push Git tag
+        if: steps.existing_pr.outputs.exists == 'false'
+        run: |
+          NEW_VERSION="${{ steps.version.outputs.new_version }}"
+
+          git tag "$NEW_VERSION" "$GITHUB_SHA"
+          git push origin "$NEW_VERSION"
+
+      - name: Create release pull request
+        if: steps.existing_pr.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NEW_VERSION: ${{ steps.version.outputs.new_version }}
+        run: |
+          cat > pr-body.md <<EOF
+          Version: ${NEW_VERSION}
+          Source branch: develop
+          Target branch: main
+          Commit SHA: ${GITHUB_SHA}
+          Execution date: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          This Pull Request was automatically created after the package job completed successfully.
+          EOF
+
+          gh pr create \
+            --base main \
+            --head develop \
+            --title "Release ${NEW_VERSION}" \
+            --body-file pr-body.md \
+            --label release \
+            --label automated-pr
