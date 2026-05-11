@@ -1,0 +1,23 @@
+name: CI Develop - Datadog
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  datadog-monitoring:
+    name: Datadog Monitoring Setup
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Simulate Datadog configuration
+        run: |
+          echo "Datadog monitoring configuration would run here."
+          echo "Example steps:"
+          echo "- Configure DD_API_KEY"
+          echo "- Configure DD_SITE"
+          echo "- Send deployment marker"
+          echo "- Enable logs, metrics and traces"
+          echo "Datadog pipeline stage prepared for enterprise integration."

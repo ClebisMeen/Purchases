@@ -1,0 +1,60 @@
+name: CI Develop - Build
+
+on:
+  workflow_call:
+    inputs:
+      dotnet_version:
+        required: true
+        type: string
+      solution_path:
+        required: true
+        type: string
+      unit_test_project_path:
+        required: true
+        type: string
+      integration_test_project_path:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Restore and Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup .NET SDK with NuGet cache
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ inputs.dotnet_version }}
+          cache: true
+          cache-dependency-path: |
+            src/Wex.Purchases.slnx
+            src/**/*.csproj
+            tests/**/*.csproj
+
+      - name: Restore application dependencies
+        run: dotnet restore "${{ inputs.solution_path }}" --nologo
+
+      - name: Restore unit test dependencies
+        run: dotnet restore "${{ inputs.unit_test_project_path }}" --nologo
+
+      - name: Restore integration test dependencies
+        run: dotnet restore "${{ inputs.integration_test_project_path }}" --nologo
+
+      - name: Build solution with warnings as errors
+        run: dotnet build "${{ inputs.solution_path }}" -c Release --no-restore /warnaserror --nologo
+
+      - name: Build unit tests with warnings as errors
+        run: dotnet build "${{ inputs.unit_test_project_path }}" -c Release --no-restore /warnaserror --nologo
+
+      - name: Build integration tests with warnings as errors
+        run: dotnet build "${{ inputs.integration_test_project_path }}" -c Release --no-restore /warnaserror --nologo

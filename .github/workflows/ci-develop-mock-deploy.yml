@@ -1,0 +1,97 @@
+name: CI Develop - Mock Deploy
+
+on:
+  workflow_call:
+    inputs:
+      ecs_cluster:
+        required: false
+        type: string
+      ecs_service:
+        required: false
+        type: string
+      environment_name:
+        required: true
+        type: string
+      image_uri:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Mock Deploy to ECS Development
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: ${{ inputs.environment_name }}
+
+    steps:
+      - name: Prepare mock deployment artifacts
+        env:
+          ECS_CLUSTER: ${{ inputs.ecs_cluster }}
+          ECS_SERVICE: ${{ inputs.ecs_service }}
+          IMAGE_URI: ${{ inputs.image_uri }}
+        run: |
+          mkdir -p artifacts/deploy/development
+
+          cat > artifacts/deploy/development/mock-deploy-plan.json <<EOF
+          {
+            "environment": "development",
+            "provider": "aws",
+            "target": "ecs-fargate",
+            "deployment_mode": "terraform_managed",
+            "execution_mode": "mock",
+            "cluster": "${ECS_CLUSTER:-wex-purchases-development-cluster}",
+            "service": "${ECS_SERVICE:-wex-purchases-api-development-service}",
+            "image": "${IMAGE_URI}",
+            "status": "deployment_not_executed"
+          }
+          EOF
+
+      - name: Validate deployment strategy
+        run: |
+          echo "Validating deployment strategy..."
+          echo "Infrastructure deployment is managed by Terraform."
+          echo "GitHub Actions deployment stage is configured as a mock execution."
+          echo "No AWS resources will be created or updated from this workflow."
+
+      - name: Simulate ECS deployment flow
+        run: |
+          echo "Starting ECS deployment simulation..."
+          echo "Would assume AWS role using OIDC."
+          echo "Would read ECS cluster and service created by Terraform."
+          echo "Would register a new ECS task definition revision."
+          echo "Would update ECS service with the new container image."
+          echo "Would wait for ECS service stability."
+          echo "Mock deployment completed successfully."
+
+      - name: Collect mock deployment summary
+        if: always()
+        run: |
+          {
+            echo "## Development deploy summary"
+            echo ""
+            echo "- Deployment mode: \`Mock\`"
+            echo "- Infrastructure manager: \`Terraform\`"
+            echo "- Target platform: \`AWS ECS Fargate\`"
+            echo "- Environment: \`development\`"
+            echo "- Image: \`${{ inputs.image_uri }}\`"
+            echo "- AWS execution: \`disabled\`"
+            echo "- Result: \`deployment flow validated without creating cloud resources\`"
+            echo ""
+            echo "### Notes"
+            echo "- This job represents the production deployment flow."
+            echo "- Terraform is responsible for provisioning AWS infrastructure."
+            echo "- Real ECS deployment is intentionally disabled to avoid cloud costs."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload mock deployment artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mock-deploy-development-artifacts
+          path: artifacts/deploy/development
+          if-no-files-found: error
+          retention-days: 14

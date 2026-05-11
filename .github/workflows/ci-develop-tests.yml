@@ -1,0 +1,68 @@
+name: CI Develop - Tests
+
+on:
+  workflow_call:
+    inputs:
+      dotnet_version:
+        required: true
+        type: string
+      suite_name:
+        required: true
+        type: string
+      suite_id:
+        required: true
+        type: string
+      project_path:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: Test - ${{ inputs.suite_name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup .NET SDK with NuGet cache
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ inputs.dotnet_version }}
+          cache: true
+          cache-dependency-path: |
+            src/Wex.Purchases.slnx
+            src/**/*.csproj
+            tests/**/*.csproj
+
+      - name: Restore dependencies for test suite
+        run: dotnet restore "${{ inputs.project_path }}" --nologo
+
+      - name: Build ${{ inputs.suite_name }} tests with warnings as errors
+        run: dotnet build "${{ inputs.project_path }}" -c Release --no-restore /warnaserror --nologo
+
+      - name: Execute ${{ inputs.suite_name }} tests
+        run: |
+          mkdir -p artifacts/test-results/${{ inputs.suite_id }}
+          dotnet test "${{ inputs.project_path }}" \
+            -c Release \
+            --no-restore \
+            --no-build \
+            --logger "trx;LogFileName=${{ inputs.suite_id }}-tests.trx" \
+            --results-directory artifacts/test-results/${{ inputs.suite_id }} \
+            --nologo
+
+      - name: Upload ${{ inputs.suite_name }} test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ inputs.suite_id }}
+          path: artifacts/test-results/${{ inputs.suite_id }}
+          if-no-files-found: error
+          retention-days: 14

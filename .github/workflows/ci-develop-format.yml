@@ -1,0 +1,57 @@
+name: CI Develop - Format
+
+on:
+  workflow_call:
+    inputs:
+      dotnet_version:
+        required: true
+        type: string
+      solution_path:
+        required: true
+        type: string
+      unit_test_project_path:
+        required: true
+        type: string
+      integration_test_project_path:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  format:
+    name: Formatting and Code Style
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup .NET SDK with NuGet cache
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ inputs.dotnet_version }}
+          cache: true
+          cache-dependency-path: |
+            src/Wex.Purchases.slnx
+            src/**/*.csproj
+            tests/**/*.csproj
+
+      - name: Restore dependencies for formatting validation
+        run: |
+          dotnet restore "${{ inputs.solution_path }}" --nologo
+          dotnet restore "${{ inputs.unit_test_project_path }}" --nologo
+          dotnet restore "${{ inputs.integration_test_project_path }}" --nologo
+
+      - name: Validate formatting for solution
+        run: dotnet format "${{ inputs.solution_path }}" --verify-no-changes --no-restore --verbosity diagnostic
+
+      - name: Validate formatting for unit tests
+        run: dotnet format "${{ inputs.unit_test_project_path }}" --verify-no-changes --no-restore --verbosity diagnostic
+
+      - name: Validate formatting for integration tests
+        run: dotnet format "${{ inputs.integration_test_project_path }}" --verify-no-changes --no-restore --verbosity diagnostic

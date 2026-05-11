@@ -1,0 +1,24 @@
+name: CI Develop - SonarQube
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  sonarqube-analysis:
+    name: SonarQube Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Simulate SonarQube analysis
+        run: |
+          echo "SonarQube analysis would run here."
+          echo "Example steps:"
+          echo "- Restore dependencies"
+          echo "- Run dotnet sonarscanner begin"
+          echo "- Run dotnet build"
+          echo "- Run dotnet test with coverage"
+          echo "- Run dotnet sonarscanner end"
+          echo "SonarQube pipeline stage prepared for enterprise integration."

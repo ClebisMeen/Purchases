@@ -9,74 +9,25 @@ on:
       - develop
 
 permissions:
-  contents: write
-  issues: write
-  pull-requests: write
+  contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
-env:
-  DOTNET_VERSION: 10.0.x
-  SOLUTION_PATH: src/Wex.Purchases.slnx
-  UNIT_TEST_PROJECT_PATH: tests/Wex.Purchases.UnitTests/Wex.Purchases.UnitTests.csproj
-  INTEGRATION_TEST_PROJECT_PATH: tests/Wex.Purchases.IntegrationTests/Wex.Purchases.IntegrationTests.csproj
-  DOCKERFILE_PATH: ./Dockerfile
-  BUILD_CONTEXT: .
-  AWS_REGION: ${{ vars.AWS_REGION }}
-  AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-  ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
-  ECS_CLUSTER: ${{ vars.ECS_CLUSTER_DEVELOP }}
-  ECS_SERVICE: ${{ vars.ECS_SERVICE_DEVELOP }}
-  ECS_TASK_DEFINITION: ${{ vars.ECS_TASK_DEFINITION_DEVELOP }}
-  ECS_CONTAINER_NAME: ${{ vars.ECS_CONTAINER_NAME }}
-
 jobs:
   build:
     name: Restore and Build
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-
-    steps:
-      - name: Checkout source code
-        uses: actions/checkout@v4
-
-      - name: Setup .NET SDK with NuGet cache
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-          cache: true
-          cache-dependency-path: |
-            src/Wex.Purchases.slnx
-            src/**/*.csproj
-            tests/**/*.csproj
-
-      - name: Restore application dependencies
-        run: dotnet restore $SOLUTION_PATH --nologo
-
-      - name: Restore unit test dependencies
-        run: dotnet restore $UNIT_TEST_PROJECT_PATH --nologo
-
-      - name: Restore integration test dependencies
-        run: dotnet restore $INTEGRATION_TEST_PROJECT_PATH --nologo
-
-      - name: Build solution with warnings as errors
-        run: dotnet build $SOLUTION_PATH -c Release --no-restore /warnaserror --nologo
-
-      - name: Build unit tests with warnings as errors
-        run: dotnet build $UNIT_TEST_PROJECT_PATH -c Release --no-restore /warnaserror --nologo
-
-      - name: Build integration tests with warnings as errors
-        run: dotnet build $INTEGRATION_TEST_PROJECT_PATH -c Release --no-restore /warnaserror --nologo
+    uses: ./.github/workflows/ci-develop-build.yml
+    with:
+      dotnet_version: 10.0.x
+      solution_path: src/Wex.Purchases.slnx
+      unit_test_project_path: tests/Wex.Purchases.UnitTests/Wex.Purchases.UnitTests.csproj
+      integration_test_project_path: tests/Wex.Purchases.IntegrationTests/Wex.Purchases.IntegrationTests.csproj
 
   tests:
     name: Test - ${{ matrix.suite.name }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    needs:
-      - build
-
+    uses: ./.github/workflows/ci-develop-tests.yml
     strategy:
       fail-fast: true
       matrix:
@@ -87,83 +38,23 @@ jobs:
           - name: Integration
             id: integration
             project: tests/Wex.Purchases.IntegrationTests/Wex.Purchases.IntegrationTests.csproj
-
-    steps:
-      - name: Checkout source code
-        uses: actions/checkout@v4
-
-      - name: Setup .NET SDK with NuGet cache
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-          cache: true
-          cache-dependency-path: |
-            src/Wex.Purchases.slnx
-            src/**/*.csproj
-            tests/**/*.csproj
-
-      - name: Restore dependencies for test suite
-        run: dotnet restore ${{ matrix.suite.project }} --nologo
-
-      - name: Execute ${{ matrix.suite.name }} tests
-        run: |
-          mkdir -p artifacts/test-results/${{ matrix.suite.id }}
-          dotnet test ${{ matrix.suite.project }} \
-            -c Release \
-            --no-restore \
-            --logger "trx;LogFileName=${{ matrix.suite.id }}-tests.trx" \
-            --results-directory artifacts/test-results/${{ matrix.suite.id }} \
-            --nologo
-
-      - name: Upload ${{ matrix.suite.name }} test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-${{ matrix.suite.id }}
-          path: artifacts/test-results/${{ matrix.suite.id }}
-          if-no-files-found: error
-          retention-days: 14
+    with:
+      dotnet_version: 10.0.x
+      suite_name: ${{ matrix.suite.name }}
+      suite_id: ${{ matrix.suite.id }}
+      project_path: ${{ matrix.suite.project }}
 
   format:
     name: Formatting and Code Style
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    needs:
-      - build
-
-    steps:
-      - name: Checkout source code
-        uses: actions/checkout@v4
-
-      - name: Setup .NET SDK with NuGet cache
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-          cache: true
-          cache-dependency-path: |
-            src/Wex.Purchases.slnx
-            src/**/*.csproj
-            tests/**/*.csproj
-
-      - name: Restore dependencies for formatting validation
-        run: |
-          dotnet restore $SOLUTION_PATH --nologo
-          dotnet restore $UNIT_TEST_PROJECT_PATH --nologo
-          dotnet restore $INTEGRATION_TEST_PROJECT_PATH --nologo
-
-      - name: Validate formatting for solution
-        run: dotnet format $SOLUTION_PATH --verify-no-changes --no-restore --verbosity diagnostic
-
-      - name: Validate formatting for unit tests
-        run: dotnet format $UNIT_TEST_PROJECT_PATH --verify-no-changes --no-restore --verbosity diagnostic
-
-      - name: Validate formatting for integration tests
-        run: dotnet format $INTEGRATION_TEST_PROJECT_PATH --verify-no-changes --no-restore --verbosity diagnostic
+    uses: ./.github/workflows/ci-develop-format.yml
+    with:
+      dotnet_version: 10.0.x
+      solution_path: src/Wex.Purchases.slnx
+      unit_test_project_path: tests/Wex.Purchases.UnitTests/Wex.Purchases.UnitTests.csproj
+      integration_test_project_path: tests/Wex.Purchases.IntegrationTests/Wex.Purchases.IntegrationTests.csproj
 
   package:
     name: Build and Push Development Image
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
     if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
     needs:
       - build
@@ -172,290 +63,50 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    environment:
-      name: development
-    env:
-      AWS_REGION: ${{ vars.AWS_REGION }}
+    uses: ./.github/workflows/ci-develop-package.yml
+    with:
+      aws_region: ${{ vars.AWS_REGION }}
+      build_context: .
+      dockerfile_path: ./Dockerfile
+      environment_name: development
+    secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
       ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
-    outputs:
-      image_uri: ${{ steps.image.outputs.image_uri }}
-
-    steps:
-      - name: Checkout source code
-        uses: actions/checkout@v4
-
-      - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Validate AWS package configuration
-        env:
-          AWS_ROLE_TO_ASSUME_DEVELOP: ${{ secrets.AWS_ROLE_TO_ASSUME_DEVELOP }}
-        run: |
-          missing=0
-
-          for name in AWS_REGION AWS_ACCOUNT_ID ECR_REPOSITORY AWS_ROLE_TO_ASSUME_DEVELOP; do
-            if [ -z "${!name}" ]; then
-              echo "::error::${name} is not configured for the development package job."
-              missing=1
-            fi
-          done
-
-          if [ "$missing" -ne 0 ]; then
-            exit 1
-          fi
-
-      - name: Configure AWS credentials via OIDC
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: ${{ env.AWS_REGION }}
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME_DEVELOP }}
-          role-session-name: github-actions-develop-package
-
-      - name: Login to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Generate image tags
-        id: image
-        run: |
-          IMAGE_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:develop-${GITHUB_SHA}"
-          IMAGE_LATEST="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:develop-latest"
-
-          echo "image_uri=${IMAGE_URI}" >> "$GITHUB_OUTPUT"
-          {
-            echo "tags<<EOF"
-            echo "${IMAGE_LATEST}"
-            echo "${IMAGE_URI}"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v6
-        with:
-          context: ${{ env.BUILD_CONTEXT }}
-          file: ${{ env.DOCKERFILE_PATH }}
-          push: true
-          provenance: false
-          build-args: |
-            BUILD_CONFIGURATION=Release
-          tags: ${{ steps.image.outputs.tags }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+      AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME_DEVELOP }}
 
   sonarqube-analysis:
     name: SonarQube Analysis
-    runs-on: ubuntu-latest
-    needs: package
-
-    steps:
-      - name: Simulate SonarQube analysis
-        run: |
-          echo "SonarQube analysis would run here."
-          echo "Example steps:"
-          echo "- Restore dependencies"
-          echo "- Run dotnet sonarscanner begin"
-          echo "- Run dotnet build"
-          echo "- Run dotnet test with coverage"
-          echo "- Run dotnet sonarscanner end"
-          echo "SonarQube pipeline stage prepared for enterprise integration."
+    needs:
+      - package
+    uses: ./.github/workflows/ci-develop-sonarqube.yml
 
   create-release-pr:
     name: Create Release Pull Request
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: package
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' && needs.package.result == 'success' }}
+    needs:
+      - package
     permissions:
       contents: write
       pull-requests: write
       issues: write
-
-    steps:
-      - name: Checkout source code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ github.token }}
-
-      - name: Configure Git author
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-      - name: Fetch Git tags
-        run: git fetch --tags --force
-
-      - name: Generate release version
-        id: version
-        run: |
-          LATEST_TAG="$(git tag --list 'v*.*.*' --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1 || true)"
-
-          if [ -z "$LATEST_TAG" ]; then
-            NEW_VERSION="v1.0.0"
-          else
-            VERSION="${LATEST_TAG#v}"
-            IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
-            PATCH=$((PATCH + 1))
-            NEW_VERSION="v${MAJOR}.${MINOR}.${PATCH}"
-          fi
-
-          echo "new_version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
-
-      - name: Check for existing release pull request
-        id: existing_pr
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          PR_NUMBER="$(gh pr list \
-            --base main \
-            --head develop \
-            --state open \
-            --json number \
-            --jq '.[0].number // ""')"
-
-          if [ -n "$PR_NUMBER" ]; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-            echo "pr_number=${PR_NUMBER}" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Ensure pull request labels exist
-        if: steps.existing_pr.outputs.exists == 'false'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh label create release \
-            --color "0E8A16" \
-            --description "Release pull requests" \
-            --force
-
-          gh label create automated-pr \
-            --color "1D76DB" \
-            --description "Pull requests created by automation" \
-            --force
-
-      - name: Create and push Git tag
-        if: steps.existing_pr.outputs.exists == 'false'
-        run: |
-          NEW_VERSION="${{ steps.version.outputs.new_version }}"
-
-          git tag "$NEW_VERSION" "$GITHUB_SHA"
-          git push origin "$NEW_VERSION"
-
-      - name: Create release pull request
-        if: steps.existing_pr.outputs.exists == 'false'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          NEW_VERSION: ${{ steps.version.outputs.new_version }}
-        run: |
-          cat > pr-body.md <<EOF
-          Version: ${NEW_VERSION}
-          Source branch: develop
-          Target branch: main
-          Commit SHA: ${GITHUB_SHA}
-          Execution date: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
-
-          This Pull Request was automatically created after the package job completed successfully.
-          EOF
-
-          gh pr create \
-            --base main \
-            --head develop \
-            --title "Release ${NEW_VERSION}" \
-            --body-file pr-body.md \
-            --label release \
-            --label automated-pr
+    uses: ./.github/workflows/ci-develop-release-pr.yml
 
   deploy:
     name: Mock Deploy to ECS Development
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
     needs:
       - package
-    environment:
-      name: development
     concurrency:
       group: deploy-development
       cancel-in-progress: false
-
-    steps:
-      - name: Prepare mock deployment artifacts
-        run: |
-          mkdir -p artifacts/deploy/development
-
-          cat > artifacts/deploy/development/mock-deploy-plan.json <<EOF
-          {
-            "environment": "development",
-            "provider": "aws",
-            "target": "ecs-fargate",
-            "deployment_mode": "terraform_managed",
-            "execution_mode": "mock",
-            "cluster": "${ECS_CLUSTER:-wex-purchases-development-cluster}",
-            "service": "${ECS_SERVICE:-wex-purchases-api-development-service}",
-            "image": "${{ needs.package.outputs.image_uri }}",
-            "status": "deployment_not_executed"
-          }
-          EOF
-
-      - name: Validate deployment strategy
-        run: |
-          echo "Validating deployment strategy..."
-          echo "Infrastructure deployment is managed by Terraform."
-          echo "GitHub Actions deployment stage is configured as a mock execution."
-          echo "No AWS resources will be created or updated from this workflow."
-
-      - name: Simulate ECS deployment flow
-        run: |
-          echo "Starting ECS deployment simulation..."
-          echo "Would assume AWS role using OIDC."
-          echo "Would read ECS cluster and service created by Terraform."
-          echo "Would register a new ECS task definition revision."
-          echo "Would update ECS service with the new container image."
-          echo "Would wait for ECS service stability."
-          echo "Mock deployment completed successfully."
-
-      - name: Collect mock deployment summary
-        if: always()
-        run: |
-          {
-            echo "## Development deploy summary"
-            echo ""
-            echo "- Deployment mode: \`Mock\`"
-            echo "- Infrastructure manager: \`Terraform\`"
-            echo "- Target platform: \`AWS ECS Fargate\`"
-            echo "- Environment: \`development\`"
-            echo "- Image: \`${{ needs.package.outputs.image_uri }}\`"
-            echo "- AWS execution: \`disabled\`"
-            echo "- Result: \`deployment flow validated without creating cloud resources\`"
-            echo ""
-            echo "### Notes"
-            echo "- This job represents the production deployment flow."
-            echo "- Terraform is responsible for provisioning AWS infrastructure."
-            echo "- Real ECS deployment is intentionally disabled to avoid cloud costs."
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Upload mock deployment artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: mock-deploy-development-artifacts
-          path: artifacts/deploy/development
-          if-no-files-found: error
-          retention-days: 14
+    uses: ./.github/workflows/ci-develop-mock-deploy.yml
+    with:
+      ecs_cluster: ${{ vars.ECS_CLUSTER_DEVELOP }}
+      ecs_service: ${{ vars.ECS_SERVICE_DEVELOP }}
+      environment_name: development
+      image_uri: ${{ needs.package.outputs.image_uri }}
 
   datadog-monitoring:
     name: Datadog Monitoring Setup
-    runs-on: ubuntu-latest
-    needs: deploy
-
-    steps:
-      - name: Simulate Datadog configuration
-        run: |
-          echo "Datadog monitoring configuration would run here."
-          echo "Example steps:"
-          echo "- Configure DD_API_KEY"
-          echo "- Configure DD_SITE"
-          echo "- Send deployment marker"
-          echo "- Enable logs, metrics and traces"
-          echo "Datadog pipeline stage prepared for enterprise integration."          
+    needs:
+      - deploy
+    uses: ./.github/workflows/ci-develop-datadog.yml
