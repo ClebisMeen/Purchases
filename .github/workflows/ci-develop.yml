@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
   pull-requests: write
 
 concurrency:
@@ -249,6 +250,7 @@ jobs:
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' && needs.package.result == 'success' }}
     permissions:
       contents: write
+      issues: write
       pull-requests: write
 
     steps:
@@ -311,6 +313,23 @@ jobs:
             echo "No open pull request from develop to main was found."
             echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Ensure pull request labels exist
+        if: steps.existing_pr.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh label create release \
+            --color "0E8A16" \
+            --description "Release pull requests" \
+            --force
+
+          gh label create automated-pr \
+            --color "1D76DB" \
+            --description "Pull requests created by automation" \
+            --force
+
+          echo "Pull request labels are available: release, automated-pr."
 
       - name: Create and push Git tag
         if: steps.existing_pr.outputs.exists == 'false'
