@@ -1,79 +1,162 @@
 # Docker Compose
 
-Docker Compose provides the standard local runtime for the Wex Purchases API. It starts the application and required infrastructure without manually installing MySQL or Redis.
+O Docker Compose fornece o runtime local padrao da Wex Purchases API. Ele sobe a aplicacao e a infraestrutura usada no desenvolvimento sem exigir instalacao manual de MySQL, Redis, SonarQube, PostgreSQL ou Datadog Agent no host.
 
-## Services
+## Servicos
 
-| Service | Container | Image or Build | Port |
+| Servico | Container | Imagem ou build | Porta |
 | --- | --- | --- | --- |
-| `wex-purchases-api` | `wex-purchases-api` | Built from `Dockerfile` | `8080:8080` |
+| `wex-purchases-api` | `wex-purchases-api` | Build local a partir do `Dockerfile` | `8080:8080` |
 | `wex-mysql` | `wex-purchases-mysql` | `mysql:8.4` | `3306:3306` |
 | `wex-redis` | `wex-purchases-redis` | `redis:latest` | `6379:6379` |
+| `sonarqube` | `wex-purchases-sonarqube` | `sonarqube:community` | `9000:9000` |
+| `sonarqube-db` | `wex-purchases-sonarqube-db` | `postgres:16-alpine` | Apenas rede interna |
+| `datadog-agent` | `wex-purchases-datadog-agent` | `gcr.io/datadoghq/agent:latest` | `8126:8126` |
 
-## Start the Stack
+## Subir o ambiente
 
 ```bash
 docker compose up --build
 ```
 
-Verify health:
+Validar a saude da API:
 
 ```bash
 curl http://localhost:8080/health
 ```
 
-Open Swagger:
+Abrir o Swagger:
 
 ```text
 http://localhost:8080/swagger
 ```
 
-## Stop the Stack
+Abrir o SonarQube:
+
+```text
+http://localhost:9000
+```
+
+## Parar o ambiente
 
 ```bash
 docker compose down
 ```
 
-Remove the MySQL volume:
+Remover tambem os volumes locais:
 
 ```bash
 docker compose down -v
 ```
 
-Use volume removal when you want to recreate the database from scratch.
+Use a remocao de volumes quando quiser recriar do zero os dados locais do MySQL, SonarQube e PostgreSQL.
 
-## Startup Order
+## Ordem de inicializacao
 
-The API depends on:
+A API depende de:
 
-- MySQL being healthy.
-- Redis being started.
+- MySQL saudavel.
+- Redis iniciado.
+- Datadog Agent iniciado.
 
-MySQL uses a `mysqladmin ping` health check. Once MySQL is healthy, the API starts and applies EF Core migrations automatically.
+O MySQL usa um health check com `mysqladmin ping`. Depois que o MySQL fica saudavel, a API inicia e aplica as migrations do EF Core automaticamente.
 
-## Persistence
+O SonarQube depende do `sonarqube-db`, um PostgreSQL dedicado usado apenas pela instancia local do SonarQube.
 
-MySQL data is stored in the named volume:
+## SonarQube
+
+O servico `sonarqube` executa o SonarQube Community Edition para analise local de qualidade de codigo. Ele permite validar issues, security hotspots, duplicacao, cobertura e Quality Gate antes de promover alteracoes.
+
+Ele fica disponivel em `http://localhost:9000` e usa o login local padrao `admin / admin` no primeiro acesso. O SonarQube pode solicitar a troca da senha inicial.
+
+O SonarQube nao usa o MySQL da aplicacao. Ele usa o servico `sonarqube-db`, baseado em PostgreSQL, com a connection string:
+
+```yaml
+SONAR_JDBC_URL: jdbc:postgresql://sonarqube-db:5432/sonarqube
+SONAR_JDBC_USERNAME: sonarqube
+SONAR_JDBC_PASSWORD: sonarqube
+```
+
+Para subir somente o SonarQube e o banco dele:
+
+```bash
+docker compose up -d sonarqube sonarqube-db
+```
+
+Guia detalhado: [SonarQube](../ci-cd/sonarqube.md).
+
+## Datadog Agent
+
+O servico `datadog-agent` executa o Agent local da Datadog. Ele coleta logs de containers, traces APM, metricas de runtime da API .NET, metricas DogStatsD e telemetria dos containers Docker.
+
+A API envia traces para o Agent pela rede interna do Compose usando:
+
+```yaml
+DD_AGENT_HOST: datadog-agent
+DD_TRACE_AGENT_PORT: 8126
+DD_TRACE_ENABLED: "true"
+DD_LOGS_INJECTION: "true"
+DD_RUNTIME_METRICS_ENABLED: "true"
+```
+
+O Agent tambem le os logs dos containers por meio das montagens do Docker e das configuracoes:
+
+```yaml
+DD_LOGS_ENABLED: "true"
+DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL: "true"
+DD_APM_ENABLED: "true"
+DD_APM_NON_LOCAL_TRAFFIC: "true"
+DD_DOGSTATSD_NON_LOCAL_TRAFFIC: "true"
+```
+
+Para enviar dados para a Datadog, crie um arquivo `.env` na raiz do repositorio com a API key da sua conta:
+
+```env
+DD_API_KEY=YOUR_DATADOG_API_KEY
+```
+
+Opcionalmente ajuste o site e as tags padrao:
+
+```env
+DD_SITE=datadoghq.com
+DD_ENV=development
+DD_SERVICE=wex-purchases
+DD_VERSION=1.0.0
+```
+
+As labels `com.datadoghq.*` nos servicos ajudam o Agent a atribuir logs e tags aos servicos corretos no Datadog.
+
+Guia detalhado: [Datadog Observability](../observability/datadog.md).
+
+## Persistencia
+
+Os dados locais sao armazenados em volumes nomeados:
 
 ```text
 wex_mysql_data
+sonarqube_data
+sonarqube_extensions
+sonarqube_logs
+sonarqube_db_data
 ```
 
-This keeps local purchase data available across container restarts.
+Esses volumes preservam dados entre restarts dos containers. Use `docker compose down -v` apenas quando quiser apagar esse estado local.
 
-## Configuration
+## Configuracao da API
 
-The API container receives container-network connection strings:
+A API recebe connection strings usando nomes de servicos da rede do Compose:
 
 ```yaml
 ConnectionStrings__PurchaseDb: server=wex-mysql;port=3306;database=wex_purchases;user=wex;password=wex123
 ConnectionStrings__Redis: wex-redis:6379
 ```
 
-These differ from the source-run local defaults, which use `localhost`.
+Esses valores diferem dos defaults usados ao rodar a API direto no host, que normalmente apontam para `localhost`.
 
-## Related Documentation
+## Documentacao relacionada
 
 - [Local Development](local-development.md)
 - [Environment Variables](environment-variables.md)
+- [SonarQube](../ci-cd/sonarqube.md)
+- [Datadog Observability](../observability/datadog.md)
 - [Testing Strategy](../testing/testing-strategy.md)
