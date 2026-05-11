@@ -1,4 +1,4 @@
-namespace Wex.Purchases.Infrastructure.Treasury.Results;
+namespace Wex.Purchases.Contracts.Results;
 
 /// <summary>
 /// Represents the normalized exchange-rate data returned by the Treasury integration.

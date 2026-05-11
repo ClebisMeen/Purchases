@@ -3,7 +3,6 @@ using Wex.Purchases.Application.Currencies;
 using Wex.Purchases.Application.Repositories;
 using Wex.Purchases.Application.Validators;
 using Wex.Purchases.Domain.ValueObjects;
-using Wex.Purchases.Infrastructure.Treasury.Requests;
 using Wex.Purchases.Infrastructure.Treasury.Services;
 
 [assembly: InternalsVisibleTo("Wex.Purchases.UnitTests")]

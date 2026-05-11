@@ -16,7 +16,6 @@ global using Wex.Purchases.Contracts.Requests;
 global using Wex.Purchases.Contracts.Results;
 global using Wex.Purchases.Domain.Entities;
 global using Wex.Purchases.Infrastructure.MySql.Persistence;
-global using Wex.Purchases.Infrastructure.Treasury.Requests;
 global using Wex.Purchases.Infrastructure.Treasury.Services;
 global using Wex.Purchases.IntegrationTests.Configurations;
 global using Wex.Purchases.IntegrationTests.Fixtures;

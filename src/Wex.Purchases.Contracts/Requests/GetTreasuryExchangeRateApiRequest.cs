@@ -1,4 +1,4 @@
-namespace Wex.Purchases.Infrastructure.Treasury.Requests;
+namespace Wex.Purchases.Contracts.Requests;
 
 /// <summary>
 /// Represents the input required to query the Treasury exchange-rate API.
