@@ -12,6 +12,7 @@ This repository was built for the Wex technical challenge and demonstrates Clean
 - [Architecture](#architecture)
 - [Local Setup](#local-setup)
 - [Running With Docker Compose](#running-with-docker-compose)
+- [Local Observability With Datadog](#local-observability-with-datadog)
 - [Local Code Quality With SonarQube](#local-code-quality-with-sonarqube)
 - [Running Tests](#running-tests)
 - [API Reference](#api-reference)
@@ -145,6 +146,12 @@ Default service URLs:
 The API applies EF Core migrations automatically during startup when not running in the `Testing` environment.
 
 Detailed guide: [Docker Compose](docs/setup/docker-compose.md).
+
+## Local Observability With Datadog
+
+The project includes a Datadog observability guide for local development in [Datadog Observability](docs/observability/datadog.md). It explains how to configure the `datadog-agent` service in Docker Compose, provide the required `DD_API_KEY` through a local `.env` file, and validate that logs, APM traces, .NET runtime metrics, and container telemetry are reaching Datadog.
+
+The guide also documents how the API instrumentation works with `Datadog.Trace.Bundle`, which environment variables are used by the API and the Agent, where to inspect infrastructure, logs, traces, and metrics in the Datadog UI, and how to troubleshoot common issues such as missing traces or logs.
 
 ## Local Code Quality With SonarQube
 
@@ -344,6 +351,7 @@ See [Terraform](docs/infra/terraform.md), [ECS Fargate](docs/infra/ecs-fargate.m
 │   ├── business
 │   ├── ci-cd
 │   ├── infra
+│   ├── observability
 │   ├── setup
 │   └── testing
 ├── infra
@@ -411,3 +419,7 @@ See [Terraform](docs/infra/terraform.md), [ECS Fargate](docs/infra/ecs-fargate.m
 - [ECS Fargate](docs/infra/ecs-fargate.md)
 - [Networking](docs/infra/networking.md)
 - [Observability](docs/infra/observability.md)
+
+### Observability
+
+- [Datadog Observability](docs/observability/datadog.md)
