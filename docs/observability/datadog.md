@@ -68,10 +68,17 @@ Com `DD_LOGS_INJECTION=true`, o tracer injeta identificadores de correlacao nos 
 
 ## Onde visualizar no Datadog
 
-Containers:
+Infraestrutura:
 
-- Acesse **Infrastructure > Containers**.
+- Acesse **Infrastructure > Host List**.
 - Filtre por `env:development` ou pelos containers `wex-purchases-*`.
+- A lista de hosts deve mostrar o host Docker ativo:
+
+![Datadog host list com docker-desktop ativo](../assets/datadog-1.png)
+
+- Ao abrir o host `docker-desktop`, valide tags, apps detectados e informacoes do ambiente:
+
+![Datadog detalhes do host docker-desktop](../assets/datadog-2.png)
 
 Logs:
 
@@ -96,6 +103,9 @@ Metricas:
 - Acesse **Metrics > Explorer**.
 - Procure por metricas de runtime .NET, APM e containers.
 - Exemplos uteis incluem latencia de requests, taxa de erros, throughput e metricas de CPU/memoria do container.
+- Tambem e possivel validar metricas direto em **Infrastructure > Host List > docker-desktop > Metrics**:
+
+![Datadog metricas do host docker-desktop](../assets/datadog-3.png)
 
 ## Como gerar dados para validacao
 
